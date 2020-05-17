@@ -1,0 +1,920 @@
+package com.textutils.textview.view
+
+import android.content.Context
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.Typeface
+import android.text.SpannableStringBuilder
+import android.text.Spanned
+import android.text.TextPaint
+import android.text.method.LinkMovementMethod
+import android.text.style.*
+import android.util.AttributeSet
+import android.util.Log
+import android.view.View
+import com.textutils.textview.utils.ModuleUtils
+import com.textutils.textview.R
+import com.textutils.textview.SuperTextClickListener
+import com.textutils.textview.utils.TextUtils
+
+/**
+ * 基于安卓textview进行修改,目的是方便各种样式的设置
+ * @author libowu
+ */
+class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
+    private var stringBuffer: SpannableStringBuilder? = null
+    //临时保存文字大小
+    private var tempTextSize = 0f
+    //保存竖排文字时需要使用的特殊样式
+    private var portraitStyleMap: HashMap<String, Int>? = null
+    //点击监听
+    private var clickCallback:SuperTextClickListener?=null
+    //这个变量是测量文字大小时使用的标准文字，即无论汉字、字母、数字或符号，最终测量出来的字体大小是已这个字符为标准的。这样的目的是避免文字在排版时出现混乱的情况
+    private var portaitStr = "你"
+    //是否支持竖排文字显示
+    private var superTextEnablePortrait = false
+    //获取文本内容时不应该获取到的文本内容，比如在文本末端添加的占位符和末尾按钮等这些文本不应该被获取到的
+    private var excludeStr = ""
+    //竖排文字的列数
+    private var rowSize = 0
+    //特殊样式的字体颜色
+    var superColor: Int = Color.BLACK
+    //需要匹配的文案
+    var matchStr:String?= ""
+    //是否对textview的所有文案进行目标匹配,匹配目标为matchStr
+    var matchEverySameStr:Boolean = false
+    //需要设置特殊样式的起始位置
+    var startPosition:Int = 0
+    //需要匹配特殊样式的结束位置
+    var endPosition:Int = 0
+    //设置样式的样式类型
+    var styleType:Int = 0
+    //特殊样式文字大小
+    var superTextSize:Int = 0
+    //特殊样式文字缩放比例,按原文字比例
+    var superTextScalePrecent:Float = 1f
+    //特殊样式文本背景
+    var superTextBackgroundColor:Int = Color.TRANSPARENT
+    //是否设置点击时在点击文案下方添加下划线,默认打开划线
+    var enableClickUnderLine:Boolean = true
+    //是否打开竖排文字
+    var enableVerticalType:Boolean = false
+    //竖排文字的每个字符的间距倍数
+    var wordSpacingMultiplier : Float = 1f
+    //竖排文字绘制起始地点,有start和end两种,start表示从左边开始蕙芷,end则表示从右边开始绘制
+    var superTextGravity:Int = 1
+    //追加文本,即在行位添加需要追加的文案
+    var addToEndText:String?=null
+    //保存匹配字符的位置信息集合
+    private var matchStrArray: ArrayList<String> = ArrayList()
+
+
+
+
+
+
+
+    constructor(context: Context) : this(context, null)
+
+    constructor(context: Context?, attr: AttributeSet?) : this(context, attr, 0)
+
+    constructor(context: Context?, attr: AttributeSet?, def: Int) : super(context, attr, def) {
+        //设置这个透明是为了在设置点击时避免出现背景色
+        highlightColor = Color.TRANSPARENT
+        stringBuffer = SpannableStringBuilder(text)
+        tempTextSize = textSize
+        portraitStyleMap = HashMap()
+        getParameter(attr, def)
+        initData()
+    }
+
+    /**
+     * h获取xml中的属性
+     */
+    private fun getParameter(attr: AttributeSet?, def: Int) {
+        val parameterType = context.theme.obtainStyledAttributes(attr,
+            R.styleable.SuperTextView, def, 0)
+        superColor = parameterType.getColor(R.styleable.SuperTextView_superTextColor, -1)
+        matchStr = parameterType.getString(R.styleable.SuperTextView_superTextMatchStr)
+        matchEverySameStr = parameterType.getBoolean(R.styleable.SuperTextView_superTextMatchEverySameStr, false)
+        startPosition = parameterType.getInteger(R.styleable.SuperTextView_superTextStartPosition, 0)
+        endPosition = parameterType.getInteger(R.styleable.SuperTextView_superTextEndPosition, 0)
+        styleType = parameterType.getInt(R.styleable.SuperTextView_superTextViewType, 7)
+        superTextSize = parameterType.getDimensionPixelSize(R.styleable.SuperTextView_superTextSize, textSize.toInt())
+        superTextEnablePortrait = parameterType.getBoolean(R.styleable.SuperTextView_superTextEnablePortrait, false)
+        superTextSize = ModuleUtils.px2dip(
+            context,
+            superTextSize.toFloat()
+        )
+        superTextScalePrecent = parameterType.getFloat(R.styleable.SuperTextView_superTextScale, 1.0f)
+        superTextBackgroundColor = parameterType.getColor(R.styleable.SuperTextView_superBackgroundColor, Color.parseColor("#74E1FF"))
+        enableClickUnderLine = parameterType.getBoolean(R.styleable.SuperTextView_superTextEnableClickUnderline, true)
+        enableVerticalType = parameterType.getBoolean(R.styleable.SuperTextView_superTextEnableSetType, true)
+        wordSpacingMultiplier = parameterType.getFloat(R.styleable.SuperTextView_wordSpacingMultiplier, 1.0f)
+        superTextGravity = parameterType.getInt(R.styleable.SuperTextView_superTextGravity, 1)
+        addToEndText = parameterType.getString(R.styleable.SuperTextView_superTextAddToEndText)
+        parameterType.recycle()
+    }
+
+    private fun initData() {
+        if (text.toString().isNullOrEmpty()){
+            return
+        }
+        //如果存在匹配的文案,先进行清除
+        matchStrArray.clear()
+        //大于文本长度时，设置为文本长度
+        if (endPosition > text.length) {
+            endPosition = text.length
+        }
+        //小于0时，设置开始位置为文本其实位置
+        if (startPosition < 0) {
+            startPosition = 0
+        }
+        stringBuffer = SpannableStringBuilder(text)
+        matchStrArray.addAll(TextUtils.getMatchStrArray(matchStr,matchEverySameStr,text.toString(),text.toString()))
+        setStyle()
+    }
+
+    /**
+     * 通过xml属性设置不同的样式
+     */
+    private fun setStyle() {
+        when (styleType) {
+            SuperTextConfig.Style.LINE -> {
+                setSpanLine()
+            }
+            SuperTextConfig.Style.UNDER_LINE -> {
+                setSpanUnderline()
+            }
+            SuperTextConfig.Style.BOLD -> {
+                setSpanBold()
+            }
+            SuperTextConfig.Style.ITALIC -> {
+                setSpanItalic()
+            }
+            SuperTextConfig.Style.SCALE_PERCENT -> {
+                setSpanScalePercent()
+            }
+            SuperTextConfig.Style.SCALE_VALUE -> {
+                setSpanScaleValue()
+            }
+            SuperTextConfig.Style.BACKGROUND_COLOR -> {
+                setSpanBackgroundColor()
+            }
+            SuperTextConfig.Style.COLOR -> {
+                setSpanColor()
+            }
+            SuperTextConfig.Style.CLICK -> {
+
+            }
+        }
+    }
+
+    /**
+     * 这个放啊是为了使调用者可以直接使用text的setText()方法
+     * @return stringBuffer是否被重置了
+     */
+    private fun compareText():Boolean{
+        if (stringBuffer != null && !text.toString().equals(stringBuffer.toString())){
+            stringBuffer = SpannableStringBuilder(text)
+            matchStrArray.clear()
+            return true
+        }
+        return false
+    }
+
+    /**
+     * 获取开始和结束位置,使用这个方法目的是为了避免外部调用者传入开始和结束位置有问题导致软件崩溃的问题
+     */
+    private fun getStartAndEndPosition(startPosition: Int,endPosition: Int):ArrayList<Int>{
+        var tempStartPosition = startPosition
+        var tempEndPosition = endPosition
+        if (tempEndPosition < 0) {
+            tempEndPosition = 0
+        }
+        if (tempStartPosition < 0){
+            tempStartPosition = 0
+        }
+        if (tempEndPosition > text.length) {
+            tempEndPosition = text.length
+        }
+        if (tempStartPosition > tempEndPosition) {
+            tempEndPosition = 0
+            tempStartPosition = 0
+        }
+        val startAndEndPosttion = ArrayList<Int>()
+        startAndEndPosttion.add(tempStartPosition)
+        startAndEndPosttion.add(tempEndPosition)
+        return startAndEndPosttion
+    }
+
+
+    /**
+     * 设置删除线
+     */
+    fun setSpanLine(startPosition:Int = this.startPosition,endPosition:Int = this.endPosition,includeClick:Boolean = false) {
+      setPositionStyle(startPosition,endPosition,
+          SuperTextConfig.Style.LINE,includeClick)
+    }
+
+    /**
+     * 设置删除线，设置依据为字符的匹配
+     * @param matchStr 需要匹配的字符
+     * @param matchAll 是否在文中匹配所有该字符
+     * @param indexArray 需要匹配的index，比如如果只需要第二被改变样式，则此indexArray中应该放入2
+     */
+    fun setSpanLine(matchStr:String,matchAll:Boolean = false,indexArray:Array<Int> ?= null){
+        setMatchStrStyle(matchStr,matchAll,indexArray,
+            SuperTextConfig.Style.LINE,0,0,0,0f,0)
+    }
+
+    /**
+     * 设置删下划线
+     */
+    fun setSpanUnderline(startPosition:Int = this.startPosition,endPosition:Int = this.endPosition,includeClick:Boolean = false) {
+        setPositionStyle(startPosition,endPosition,
+            SuperTextConfig.Style.UNDER_LINE,includeClick)
+    }
+
+    /**
+     * 设置删除线，设置依据为字符的匹配
+     * @param matchStr 需要匹配的字符
+     * @param matchAll 是否在文中匹配所有该字符
+     * @param indexArray 需要匹配的index，比如如果只需要第二被改变样式，则此indexArray中应该放入2
+     */
+    fun setSpanUnderline(matchStr:String,matchAll:Boolean = false,indexArray:Array<Int> ?= null){
+        setMatchStrStyle(matchStr,matchAll,indexArray,
+            SuperTextConfig.Style.UNDER_LINE,0,0,0,0f,0)
+    }
+
+
+
+    /**
+     * 设置粗体
+     */
+    fun setSpanBold(startPosition:Int = this.startPosition,endPosition:Int = this.endPosition,includeClick:Boolean = false) {
+        setPositionStyle(startPosition,endPosition,
+            SuperTextConfig.Style.BOLD,includeClick)
+    }
+
+    /**
+     * 设置删除线，设置依据为字符的匹配
+     * @param matchStr 需要匹配的字符
+     * @param matchAll 是否在文中匹配所有该字符
+     * @param indexArray 需要匹配的index，比如如果只需要第二被改变样式，则此indexArray中应该放入2
+     */
+    fun setSpanBold(matchStr:String,matchAll:Boolean = false,indexArray:Array<Int> ?= null){
+        setMatchStrStyle(matchStr,matchAll,indexArray,
+            SuperTextConfig.Style.BOLD,0,0,0,0f,0)
+    }
+
+    /**
+     * 设置斜体
+     */
+    fun setSpanItalic(startPosition:Int = this.startPosition,endPosition:Int = this.endPosition,includeClick:Boolean = false) {
+        setPositionStyle(startPosition,endPosition,
+            SuperTextConfig.Style.ITALIC,includeClick)
+    }
+
+    /**
+     * 设置删除线，设置依据为字符的匹配
+     * @param matchStr 需要匹配的字符
+     * @param matchAll 是否在文中匹配所有该字符
+     * @param indexArray 需要匹配的index，比如如果只需要第二被改变样式，则此indexArray中应该放入2
+     */
+    fun setSpanItalic(matchStr:String,matchAll:Boolean = false,indexArray:Array<Int> ?= null){
+        setMatchStrStyle(matchStr,matchAll,indexArray,
+            SuperTextConfig.Style.ITALIC,0,0,0,0f,0)
+    }
+
+
+    /**
+     * 设置缩放比例
+     */
+    fun setSpanScalePercent(startPosition:Int = this.startPosition,endPosition:Int = this.endPosition,scalePercent:Float = superTextScalePrecent,includeClick:Boolean = false) {
+        setPositionStyle(startPosition,endPosition,
+            SuperTextConfig.Style.SCALE_PERCENT,includeClick,0,0,0,scalePercent,0)
+    }
+
+    /**
+     * 设置删除线，设置依据为字符的匹配
+     * @param matchStr 需要匹配的字符
+     * @param matchAll 是否在文中匹配所有该字符
+     * @param indexArray 需要匹配的index，比如如果只需要第二被改变样式，则此indexArray中应该放入2
+     */
+    fun setSpanScalePercent(matchStr:String,scalePercent: Float = this.superTextScalePrecent,matchAll:Boolean = false,indexArray:Array<Int> ?= null){
+        setMatchStrStyle(matchStr,matchAll,indexArray,
+            SuperTextConfig.Style.SCALE_PERCENT,0,0,0,scalePercent,0)
+    }
+
+    /**
+     * 设置缩放大小
+     */
+    fun setSpanScaleValue(startPosition:Int = this.startPosition,endPosition:Int = this.endPosition,superTextSize:Int = this.superTextSize,includeClick:Boolean = false) {
+        setPositionStyle(startPosition,endPosition,
+            SuperTextConfig.Style.SCALE_VALUE,includeClick,0,0,0,0f,superTextSize)
+    }
+
+    /**
+     * 设置删除线，设置依据为字符的匹配
+     * @param matchStr 需要匹配的字符
+     * @param matchAll 是否在文中匹配所有该字符
+     * @param indexArray 需要匹配的index，比如如果只需要第二被改变样式，则此indexArray中应该放入2
+     */
+    fun setSpanScaleValue(matchStr:String,scaleValue: Int = this.superTextSize,matchAll:Boolean = false,indexArray:Array<Int> ?= null){
+        setMatchStrStyle(matchStr,matchAll,indexArray,
+            SuperTextConfig.Style.SCALE_VALUE,0,0,0,0f,scaleValue)
+    }
+
+
+    /**
+     * 设置特殊样式背景色
+     */
+    fun setSpanBackgroundColor(startPosition:Int = this.startPosition,endPosition:Int = this.endPosition,backgroundColor:Int = this.superTextBackgroundColor,includeClick:Boolean = false) {
+        setPositionStyle(startPosition,endPosition,
+            SuperTextConfig.Style.BACKGROUND_COLOR,includeClick,0,backgroundColor,0,0f,0)
+    }
+
+    /**
+     * 设置删除线，设置依据为字符的匹配
+     * @param matchStr 需要匹配的字符
+     * @param matchAll 是否在文中匹配所有该字符
+     * @param indexArray 需要匹配的index，比如如果只需要第二被改变样式，则此indexArray中应该放入2
+     */
+    fun setSpanBackgroundColor(matchStr:String,backgroundColor: Int = this.superTextBackgroundColor,matchAll:Boolean = false,indexArray:Array<Int> ?= null){
+        setMatchStrStyle(matchStr,matchAll,indexArray,
+            SuperTextConfig.Style.BACKGROUND_COLOR,0,backgroundColor,0,0f,0)
+    }
+
+    /**
+     * 设置特殊样式字体颜色
+     */
+    fun setSpanColor(startPosition:Int = this.startPosition,endPosition:Int = this.endPosition,superTextColor :Int = this.superColor,includeClick:Boolean = false) {
+        setPositionStyle(startPosition,endPosition,
+            SuperTextConfig.Style.COLOR,includeClick,superTextColor,0,0,0f,0)
+    }
+
+    /**
+     * 设置删除线，设置依据为字符的匹配
+     * @param matchStr 需要匹配的字符
+     * @param matchAll 是否在文中匹配所有该字符
+     * @param indexArray 需要匹配的index，比如如果只需要第二被改变样式，则此indexArray中应该放入2
+     */
+    fun setSpanColor(matchStr:String,textColor: Int = this.superColor,matchAll:Boolean = false,indexArray:Array<Int> ?= null){
+        setMatchStrStyle(matchStr,matchAll,indexArray,
+            SuperTextConfig.Style.COLOR,textColor,0,0,0f,0)
+    }
+
+    /**
+     * 设置特殊样式字体点击
+     */
+    fun setSpanClick(startPosition:Int = this.startPosition,endPosition:Int = this.endPosition,enableUnderLine :Boolean = this.enableClickUnderLine,includeClick:Boolean = false) {
+        setPositionStyle(startPosition,endPosition,
+            SuperTextConfig.Style.CLICK,includeClick,0,0,0,0f,0,enableUnderLine)
+    }
+
+    /**
+     * 设置删除线，设置依据为字符的匹配
+     * @param matchStr 需要匹配的字符
+     * @param matchAll 是否在文中匹配所有该字符
+     * @param indexArray 需要匹配的index，比如如果只需要第二被改变样式，则此indexArray中应该放入2
+     */
+    fun setSpanClick(matchStr:String,enableUnderLine: Boolean = this.enableClickUnderLine,matchAll:Boolean = false,indexArray:Array<Int> ?= null){
+        setMatchStrStyle(matchStr,matchAll,indexArray,
+            SuperTextConfig.Style.CLICK,0,0,0,0f,0,enableUnderLine)
+    }
+
+    /**
+     * 将文本中所有链接改为可点击状态
+     * @param enableUnderlink 是否打开下划线的显示,默认显示下划线
+     */
+    fun setSpanUrlClick(enableUnderlink: Boolean=true,matchArray:Array<Int>?=null){
+        setUrlStrStyle(matchArray,SuperTextConfig.Style.CLICK,0,0,0f,0,enableUnderlink)
+    }
+
+    /**
+     * 将文本中所有链接改为可点击状态
+     * @param enableUnderlink 是否打开下划线的显示,默认显示下划线
+     */
+    fun setSpanUrlColor(superTextColor: Int=this.superColor,enableUnderlink: Boolean=true,matchArray:Array<Int>?=null){
+        setUrlStrStyle(matchArray,SuperTextConfig.Style.COLOR,superTextColor,0,0f,0,enableUnderlink)
+    }
+
+    /**
+     * 将文本中所有链接改为可点击状态
+     * @param enableUnderlink 是否打开下划线的显示,默认显示下划线
+     */
+    fun setSpanUrlBold(enableUnderlink: Boolean=true,matchArray:Array<Int>?=null){
+        setUrlStrStyle(matchArray,SuperTextConfig.Style.BOLD,0,0,0f,0,enableUnderlink)
+    }
+
+    /**
+     * 将文本中所有链接改为可点击状态
+     * @param enableUnderlink 是否打开下划线的显示,默认显示下划线
+     */
+    fun setSpanUrlBackgroundColor(backgroundColor: Int = this.superTextBackgroundColor,enableUnderlink: Boolean=true,matchArray:Array<Int>?=null){
+        setUrlStrStyle(matchArray,SuperTextConfig.Style.BOLD,0,backgroundColor,0f,0,enableUnderlink)
+    }
+
+    /**
+     * 将文本中所有链接改为可点击状态
+     * @param enableUnderlink 是否打开下划线的显示,默认显示下划线
+     */
+    fun setSpanUrlItalic(enableUnderlink: Boolean=true,matchArray:Array<Int>?=null){
+        setUrlStrStyle(matchArray,SuperTextConfig.Style.ITALIC,0,0,0f,0,enableUnderlink)
+    }
+
+    /**
+     * 将文本中所有链接改为可点击状态
+     * @param enableUnderlink 是否打开下划线的显示,默认显示下划线
+     */
+    fun setSpanUrlLine(enableUnderlink: Boolean=true,matchArray:Array<Int>?=null){
+        setUrlStrStyle(matchArray,SuperTextConfig.Style.LINE,0,0,0f,0,enableUnderlink)
+    }
+
+    /**
+     * 将文本中所有链接改为可点击状态
+     * @param enableUnderlink 是否打开下划线的显示,默认显示下划线
+     */
+    fun setSpanUrlScalePrecent(scalePrecent:Float = this.superTextScalePrecent,enableUnderlink: Boolean=true,matchArray:Array<Int>?=null){
+        setUrlStrStyle(matchArray,SuperTextConfig.Style.SCALE_PERCENT,0,0,scalePrecent,0,enableUnderlink)
+    }
+
+    /**
+     * 将文本中所有链接改为可点击状态
+     * @param enableUnderlink 是否打开下划线的显示,默认显示下划线
+     */
+    fun setSpanUrlScaleValue(scaleValue:Int = this.superTextSize,enableUnderlink: Boolean=true,matchArray:Array<Int>?=null){
+        setUrlStrStyle(matchArray,SuperTextConfig.Style.SCALE_PERCENT,0,0,0f,scaleValue,enableUnderlink)
+    }
+
+
+    /**
+     * 获取开始和结束位置,同时使用compareText()方法做一些赋值操作,位真正开始设置样式做准备
+     * @param startPosition 特殊样式开始位置
+     * @param endPosition 特殊样式结束位置
+     * @param includeClick 是否启用点击
+     * @param superTextColor 特殊样式字体样色
+     * @param img 需要插入的图片
+     * @param scalePercent 字体缩放比例
+     * @param scaleValue 字体缩放的具体大小
+     */
+    private fun setPositionStyle(startPosition:Int = this.startPosition,endPosition:Int = this.endPosition,type:Int,includeClick:Boolean,superTextColor:Int = 0,backgroundColor:Int=0,img:Int=0,scalePercent: Float = this.superTextScalePrecent,scaleValue:Int=this.superTextSize,enableUnderLine: Boolean = this.enableClickUnderLine){
+        compareText()
+        //获取开始和结束位置
+        if (!matchStr.isNullOrEmpty()){
+            for (item in matchStrArray){
+                val startIndex = item.split(",")[0]
+                val endIndex = item.split(",")[1]
+                setSuperStyle(startIndex.toInt(),endIndex.toInt(),type,includeClick,superTextColor,backgroundColor,img,scalePercent,scaleValue,false)
+            }
+            text = stringBuffer
+        }else{
+            val tempStartPosition = getStartAndEndPosition(startPosition,endPosition).get(0)
+            val tempEndPosition = getStartAndEndPosition(startPosition,endPosition).get(1)
+            setSuperStyle(tempStartPosition,tempEndPosition,type,includeClick,superTextColor,backgroundColor,img,scalePercent,scaleValue)
+        }
+    }
+
+    /**
+     * 通過字符串匹配獲取开始位置和解锁位置
+     */
+    private fun setMatchStrStyle(matchStr:String,matchAll:Boolean,indexArray:Array<Int>?,type:Int,superTextColor:Int = 0,backgroundColor:Int=0,img:Int=0,scalePercent: Float = this.superTextScalePrecent,scaleValue:Int=this.superTextSize,enableUnderLine: Boolean = this.enableClickUnderLine){
+        val isReset = compareText()
+        matchEverySameStr = matchAll
+        if (matchAll){
+            //如果匹配所有字符，则清除之前的数据，通过递归重新获取
+            if (!matchStr.equals(this.matchStr) || isReset){
+                this.matchStr = matchStr
+                this.matchStrArray.clear()
+                matchStrArray.addAll(TextUtils.getMatchStrArray(matchStr,matchAll,text.toString(),text.toString()))
+            }
+            var tempIndex = 0
+            for (item in matchStrArray!!.withIndex()) {
+                //通过调用者传入的数组判断哪些目标是需要匹配的
+                if (indexArray != null){
+                    if (indexArray.contains(item.index)){
+                        //如果已经匹配完了，没必要浪费时间据需往下匹配了
+                        tempIndex++
+                        if (tempIndex > indexArray.size){
+                            break
+                        }
+                        val startIndex = item.value.split(",")[0].toInt()
+                        val endIndex = item.value.split(",")[1].toInt()
+                        if (endIndex > text.length) {
+                            break
+                        }
+                        //Log.e("日志","循环结果："+item)
+                        setSuperStyle(startIndex,endIndex,type,false,superTextColor,backgroundColor,img,scalePercent,scaleValue,false)
+                    }
+                }else{
+                    //获取匹配目标的开始和结束位置
+                    val startIndex = item.value.split(",")[0].toInt()
+                    val endIndex = item.value.split(",")[1].toInt()
+                    if (endIndex > text.length) {
+                        break
+                    }
+                    setSuperStyle(startIndex,endIndex,type,false,superTextColor,backgroundColor,img,scalePercent,scaleValue,false)
+                }
+            }
+            text = stringBuffer
+        }else{
+            //不需要匹配全部目标时,只需要匹配到文本的第一个目标即可
+            var startIndex = text.toString().indexOf(matchStr)
+            if (startIndex == -1){
+                return
+            }
+            var endIndex = startIndex + matchStr.length
+            if (startIndex < 0){
+                startIndex = 0
+            }
+            if (endIndex > text.toString().length){
+                endIndex = text.toString().length
+            }
+            setSuperStyle(startIndex,endIndex,type,false,superTextColor,backgroundColor,img,scalePercent,scaleValue,true)
+        }
+    }
+
+
+    /**
+     * 通过url的开始和结束位置设置样式
+     */
+    private fun setUrlStrStyle(indexArray:Array<Int>?,type:Int,superTextColor:Int = 0,backgroundColor:Int=0,scalePercent: Float = this.superTextScalePrecent,scaleValue:Int=this.superTextSize,enableUnderLine: Boolean = this.enableClickUnderLine){
+        val isReset = compareText()
+        //避免设置时每次都需要生成一遍数据,如果存在可用数据,就使用可用数据
+        if (isReset || matchStrArray.size == 0){
+            Log.e("日志","我被执行了")
+            matchStrArray = TextUtils.getUrlArray(text.toString())
+        }
+        var tempIndex = 0
+        for (item in matchStrArray.withIndex()){
+            if (indexArray != null){
+                if (indexArray.contains(item.index)) {
+                    //如果已经匹配完了，没必要浪费时间据需往下匹配了
+                    tempIndex++
+                    if (tempIndex > indexArray.size) {
+                        break
+                    }
+                    val startIndex = item.value.split(",")[0].toInt()
+                    val endIndex = item.value.split(",")[1].toInt()
+                    if (endIndex > text.length) {
+                        break
+                    }
+                    setSuperStyle(startIndex,endIndex,type,true,superTextColor,backgroundColor,0,scalePercent,scaleValue,false,enableUnderLine)
+                }
+            }else{
+                val startIndex = item.value.split(",")[0].toInt()
+                val endIndex = item.value.split(",")[1].toInt()
+                setSuperStyle(startIndex,endIndex,type,true,superTextColor,backgroundColor,0,scalePercent,scaleValue,false,enableUnderLine)
+            }
+        }
+        text = stringBuffer
+    }
+
+
+    /**
+     * 真正开始设置样式
+     * @param startPosition 特殊样式开始位置
+     * @param endPosition 特殊样式结束位置
+     * @param includeClick 是否启用点击
+     * @param superTextColor 特殊样式字体样色
+     * @param img 需要插入的图片
+     * @param scalePercent 字体缩放比例
+     * @param scaleValue 字体缩放的具体大小
+     * @param refreshNow 是否马上刷新,当出现for循环时,此属性会改为false,避免textview多次重复绘制浪费不必要的资源
+     */
+    private fun setSuperStyle(startPosition:Int = this.startPosition,endPosition:Int = this.endPosition,type:Int,includeClick:Boolean,superTextColor:Int = 0,backgroundColor:Int=0,img:Int=0,scalePercent: Float = this.superTextScalePrecent,scaleValue:Int=this.superTextSize,refreshNow:Boolean = true,enableUnderLine: Boolean = this.enableClickUnderLine){
+        when (type) {
+            SuperTextConfig.Style.LINE -> {
+                val lineStype = StrikethroughSpan()
+                stringBuffer?.setSpan(lineStype, startPosition, endPosition, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                if (refreshNow){
+                    text = stringBuffer
+                }
+            }
+            SuperTextConfig.Style.UNDER_LINE -> {
+                val underlineStype = UnderlineSpan()
+                stringBuffer?.setSpan(underlineStype, startPosition, endPosition, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                if (refreshNow){
+                    text = stringBuffer
+                }
+            }
+            SuperTextConfig.Style.BOLD -> {
+                val styleSpa = StyleSpan(Typeface.BOLD)
+                stringBuffer?.setSpan(styleSpa, startPosition, endPosition, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                if (refreshNow){
+                    text = stringBuffer
+                }
+            }
+            SuperTextConfig.Style.ITALIC -> {
+                val styleSpan = StyleSpan(Typeface.ITALIC)
+                stringBuffer?.setSpan(styleSpan, startPosition, endPosition, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                if (refreshNow){
+                    text = stringBuffer
+                }
+            }
+            SuperTextConfig.Style.SCALE_PERCENT -> {
+                val styleSpan = RelativeSizeSpan(scalePercent)
+                stringBuffer?.setSpan(styleSpan, startPosition, endPosition, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                if (refreshNow){
+                    text = stringBuffer
+                }
+            }
+            SuperTextConfig.Style.SCALE_VALUE -> {
+                val lineStype = AbsoluteSizeSpan(scaleValue.toInt(), true)
+                stringBuffer?.setSpan(lineStype, startPosition, endPosition, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                if (refreshNow){
+                    text = stringBuffer
+                }
+            }
+            SuperTextConfig.Style.BACKGROUND_COLOR -> {
+                val backgroundColorSpan = BackgroundColorSpan(backgroundColor)
+                stringBuffer?.setSpan(backgroundColorSpan, startPosition, endPosition, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            }
+            SuperTextConfig.Style.COLOR -> {
+                val lineStype = ForegroundColorSpan(superTextColor)
+                stringBuffer?.setSpan(lineStype, startPosition, endPosition, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                if (refreshNow){
+                    text = stringBuffer
+                }
+            }
+            SuperTextConfig.Style.CLICK -> {
+                val clickSpan = object : ClickableSpan() {
+                    override fun onClick(widget: View) {
+                        Log.e("日志","点击监听器是否为空:${clickCallback == null}")
+                        clickCallback?.onClick(startPosition, endPosition, text.substring(startPosition, endPosition))
+                    }
+
+                    override fun updateDrawState(ds: TextPaint) {
+                        super.updateDrawState(ds)
+                        ds.isUnderlineText = enableUnderLine
+                    }
+                }
+                stringBuffer?.setSpan(clickSpan, startPosition, endPosition, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                movementMethod = LinkMovementMethod.getInstance();
+                if (refreshNow){
+                    text = stringBuffer
+                }
+            }
+        }
+    }
+
+    /**
+     * 设置样式点击监听器
+     */
+    fun setOnStyleFontClickListener(clickClickListener:SuperTextClickListener){
+        this.clickCallback = clickClickListener
+    }
+
+    override fun onDraw(canvas: Canvas?) {
+        if (superTextEnablePortrait) {
+            //竖排文字
+            drawPortraintText(canvas)
+        } else {
+            //普通排版
+            drawAddTo(canvas)
+            super.onDraw(canvas)
+        }
+    }
+
+    /**
+     * 绘制竖排文字
+     */
+    private fun drawPortraintText(canvas: Canvas?) {
+        text?.let {
+            rowSize = 0
+            val tx = it
+            var tempRowWordCount = 0
+            paint.color = currentTextColor
+
+            //计算最大行数
+            var lineSize = ((height - paddingTop - paddingBottom)/(paint.measureText(portaitStr)*lineSpacingMultiplier)+0.5).toInt()
+            //计算最大列数
+            val rowsize = (width - paddingLeft - paddingRight)/((height - paddingTop - paddingBottom)/(paint.measureText(portaitStr)*wordSpacingMultiplier)+0.5).toInt()
+            //计算当前字符列数
+            var currentLineSize = 0
+            if (maxLines != -1 && text.toString().length > maxLines){
+                currentLineSize = lineSize
+            }else{
+                currentLineSize = text.toString().length
+            }
+            //计算当前字符行数
+            var currentRowSize = (text.toString().length/(currentLineSize*1.0f)+0.99).toInt()
+            if (superTextGravity == SuperTextConfig.Gravity.CENTER_END || superTextGravity == SuperTextConfig.Gravity.CENTER_START){
+                //如果当前行数等于最大行数，y坐标不需要迁移,如果当前列数等于最大列数，x轴不需要迁移
+                //计算x坐标需要迁移的距离
+                var xOffect = 0f
+                var yOffect = 0f
+                var x = 0f
+                var y = -paint.measureText(portaitStr) / lineSpacingMultiplier
+
+                if (currentLineSize < lineSize){
+                    if (currentLineSize == 1){
+                        y = height/2-(paint.measureText(portaitStr) / lineSpacingMultiplier)*1.5f - 5
+                    }else{
+                        yOffect = (currentLineSize*paint.measureText(portaitStr)*lineSpacingMultiplier)/2
+                        y = height/2 - yOffect-(paint.measureText(portaitStr) / lineSpacingMultiplier)*1f - 5 - paddingTop
+                    }
+                }else{
+                    y =-paint.measureText(portaitStr) / lineSpacingMultiplier - 5
+                }
+                if (currentRowSize < rowsize){
+                    if (superTextGravity == SuperTextConfig.Gravity.CENTER_END){
+                        xOffect = (currentRowSize*paint.measureText(portaitStr)*wordSpacingMultiplier)/2 - paint.measureText(portaitStr)*wordSpacingMultiplier/4 + 5
+                        if (currentRowSize ==1){
+                            x = -width/2 + paint.measureText(portaitStr)/2 + paddingRight
+                        }else{
+                            x = -width/2+xOffect+paddingRight
+                        }
+                    }else{
+                        xOffect = (currentRowSize*paint.measureText(portaitStr)*wordSpacingMultiplier)/2
+                        if (currentRowSize == 1){
+                            x = width/2 - paint.measureText(portaitStr)/2 - paddingLeft
+                        }else{
+                            x = width/2-xOffect - paddingLeft
+                        }
+                    }
+                }else{
+                    x = 0f
+                }
+                canvas?.translate(x,y)
+            }else{
+                canvas?.translate(0f, -paint.measureText(portaitStr) / lineSpacingMultiplier)
+            }
+
+            for (index in 0..it.toString().length - 1) {
+                //如果存在需要匹配的字符，则对画笔颜色进行设置
+                if (matchStr != null && matchStrArray.contains("${index},${index + matchStr!!.length}") && superColor != -1) {
+                    paint.color = superColor
+                } else {
+                    paint.color = textColors.defaultColor
+                }
+
+                canvas?.let {
+                    //当文字高度超出了画布高度时，列数需要加一，并且把临时保存的行数归零。行数用于计算可用高度，列数用于计算可用宽度
+                    if (tempRowWordCount * paint.measureText(portaitStr) * lineSpacingMultiplier + paint.measureText(portaitStr) * lineSpacingMultiplier - paint.measureText(portaitStr) * lineSpacingMultiplier / 2 > height - (paddingTop + paddingBottom)) {
+                        rowSize++
+                        tempRowWordCount = 0
+                    }
+                    tempRowWordCount++
+
+                    //0为重左边开始绘制，1为重右边开始绘制。默认时重右边开始绘制文案
+                    if (superTextGravity == 0 || superTextGravity == SuperTextConfig.Gravity.CENTER_START) {
+                        if (rowSize * paint.measureText(portaitStr) * wordSpacingMultiplier > width - paddingLeft - paddingRight) {
+                            return
+                        }
+                        it.drawText("${tx[index]}", rowSize * paint.measureText(portaitStr) * wordSpacingMultiplier + paddingLeft, tempRowWordCount * paint.measureText(portaitStr) * lineSpacingMultiplier + paddingTop + paint.measureText(portaitStr), paint)
+                    } else if (superTextGravity == 1 || superTextGravity == SuperTextConfig.Gravity.CENTER_END){
+                        if (width - rowSize * paint.measureText(portaitStr) * wordSpacingMultiplier - paddingRight < paddingLeft) {
+                            return
+                        }
+                        it.drawText("${tx[index]}", width - rowSize * paint.measureText(portaitStr) * wordSpacingMultiplier - paint.measureText(portaitStr) - paddingRight, tempRowWordCount * paint.measureText(portaitStr) * lineSpacingMultiplier + paddingTop+paint.measureText(portaitStr), paint)
+                    }
+
+                }
+            }
+        }
+    }
+
+
+    /**
+     * 获取值追加文字
+     */
+    private fun drawAddTo(canvas: Canvas?) {
+        addToEndText?.let {
+            stringBuffer?.let {
+                //如果追加过文本，需要将追加的文本去除
+                var temp = it.toString()
+                var tempWidth = 0f
+                for (item in 0..temp.length-1){
+                    if (tempWidth > (width) - paddingLeft - paddingRight){
+                        tempWidth = width - tempWidth
+                    }
+                    tempWidth += paint.measureText("${temp[item]}")
+                }
+                val test = addToEndText
+                var tempTestLenght =paint.measureText(test)
+                //如果最终的剩余宽度足够添加末尾文字，则添加末尾文字
+                if (tempWidth + tempTestLenght < width-paddingLeft-paddingRight){
+                    //计算末尾需要补充的占位符个数
+                    val placeholderCount = (width - tempWidth - tempTestLenght - paddingLeft - paddingRight)/paint.measureText(" ")
+                    //插入占位符
+                    for (item in 0..placeholderCount.toInt()-1){
+                        stringBuffer?.append(" ")
+                        excludeStr += " "
+                    }
+                    excludeStr+=test
+                    stringBuffer?.append(test)
+                }else if ( tempWidth + tempTestLenght == width.toFloat()-paddingLeft-paddingRight ){
+                    //此时因为之前的原有字符加末尾的字符等于textview的宽度，这时可以直接插入
+                    stringBuffer?.append(test)
+                    excludeStr+=test
+                }else{
+                    //原本的字符长度太长，无法进行插入，则直接开启下一行进行插入
+                    stringBuffer?.append("\n")
+                    excludeStr+="\n"
+                    val placeholderCount = (width - tempTestLenght - paddingLeft - paddingRight)/paint.measureText(" ")
+                    for (item in 0..((placeholderCount.toInt())-1)){
+                        stringBuffer?.append(" ")
+                        excludeStr += " "
+                    }
+                    excludeStr+=test
+                    stringBuffer?.append(test)
+                }
+                text =stringBuffer
+                addToEndText = null
+            }
+        }
+    }
+
+
+
+    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        if (superTextEnablePortrait) {
+            val selfHeight = reSize(0, heightMeasureSpec, true)
+            val selfWidth = reSize(0, widthMeasureSpec, false)
+            setMeasuredDimension(selfWidth, selfHeight)
+        } else {
+            if (text.toString().isEmpty()){
+                super.onMeasure(0, 0)
+            }else{
+                super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+            }
+        }
+    }
+
+    /**
+     * 设置宽和高
+     */
+    fun reSize(size: Int, measureSpec: Int, isHeight: Boolean): Int {
+        val specMode = MeasureSpec.getMode(measureSpec)
+        val specSize = MeasureSpec.getSize(measureSpec)
+        return when (specMode) {
+            MeasureSpec.UNSPECIFIED -> {
+                if (isHeight) {
+                    if (maxLines < text.toString().length) {
+                        (paint.measureText(portaitStr) * maxLines * lineSpacingMultiplier).toInt() + paddingTop + paddingBottom
+                    } else {
+                        (paint.measureText(portaitStr) * text.toString().length * lineSpacingMultiplier).toInt() + paddingTop + paddingBottom
+                    }
+                } else {
+                    ((text.toString().length / maxLines + 0.99) * (paint.measureText(portaitStr)) * wordSpacingMultiplier).toInt() + paddingLeft + paddingRight
+                }
+            }
+            MeasureSpec.AT_MOST -> {
+                //设定宽高原则是，总列数宽度或总行数高度与可用宽度或高度比较，哪个值小使用那个，这样可以避免文字内容溢出可用宽度或高度的情况
+                if (isHeight) {
+                    if (maxLines < text.toString().length) {
+                        Math.min((paint.measureText(portaitStr) * maxLines * lineSpacingMultiplier).toInt() + paddingTop + paddingBottom, specSize)
+                    } else {
+                        Math.min((paint.measureText(portaitStr) * text.toString().length * lineSpacingMultiplier).toInt() + paddingTop + paddingBottom, specSize)
+                    }
+                } else {
+                    Math.min(((text.toString().length / maxLines + 0.99) * (paint.measureText(portaitStr)) * wordSpacingMultiplier).toInt() + paddingLeft + paddingRight, specSize)
+                }
+            }
+            MeasureSpec.EXACTLY -> {
+                specSize
+            }
+            else -> {
+                size
+            }
+        }
+    }
+
+
+    object SuperTextConfig{
+        //竖排文字的起始、结束位置，仅对竖排文字有效
+        object Gravity{
+            const val LEFT = 0
+            const val RIGHT = 1
+            const val CENTER_START = 2
+            const val CENTER_END = 3
+        }
+
+        /**
+         * 特殊样式类型
+         */
+        object Style{
+            //删除线
+            const val LINE = 0
+            //下划线
+            const val UNDER_LINE = 1
+            //加粗
+            const val BOLD = 2
+            //斜体
+            const val ITALIC = 3
+            //按比例缩放
+            const val SCALE_PERCENT = 4
+            //缩放到具体的值
+            const val SCALE_VALUE = 5
+            //设置背景色
+            const val BACKGROUND_COLOR = 6
+            //设置字体颜色
+            const val COLOR = 7
+            //点击
+            const val CLICK = 8
+        }
+    }
+}

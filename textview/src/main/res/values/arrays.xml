@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--超级文本-->
+    <declare-styleable name="SuperTextView">
+        <!--字符特殊样式的类型-->
+        <attr name="superTextViewType" format="enum">
+            <!--字符中间添加横线-->
+            <enum name="line" value="0"/>
+            <!--字符下边添加下划线-->
+            <enum name="underline" value="1"/>
+            <!--字符中间添加中线及给字体添加加粗效果-->
+            <enum name="bold" value="2"/>
+            <!-- 字符添加中线及斜体效果-->
+            <enum name="italic" value="3"/>
+            <!--以原文本字体大小为基准进行字体缩放-->
+            <enum name="scaleParent" value="4"/>
+            <!--对缩放的文字设置具体的大小-->
+            <enum name="scaleValue" value="5"/>
+            <!--设置背景颜色-->
+            <enum name="backgroundColor" value="6"/>
+            <!--设置字体颜色-->
+            <enum name="color" value="7"/>
+        </attr>
+        <!--使用特殊字符样式的字体颜色-->
+        <attr name="superTextColor" format="color"/>
+        <!--使用特殊字符样式的开始位置-->
+        <attr name="superTextStartPosition" format="integer"/>
+        <!--使用特殊样式的结束字符位置-->
+        <attr name="superTextEndPosition" format="integer"/>
+        <!--需要使用特殊样式的字符-->
+        <attr name="superTextMatchStr" format="string"/>
+        <!--将所有匹配到的字符都添加相同的效果,false时时匹配到字符串的第一个-->
+        <attr name="superTextMatchEverySameStr" format="boolean"/>
+        <!--是否开启跑马灯效果-->
+        <attr name="superTextOpenMarquee" format="boolean"/>
+        <!--具体样式时设置的字体大小，配合superTextViewType中的scaleValue使用-->
+        <attr name="superTextSize" format="dimension"/>
+        <!--具体样式时的字体缩放大小，配合superTextViewType中的scaleParent使用-->
+        <attr name="superTextScale" format="float"/>
+        <!--这个是配合superTextViewType中的backgroundColor类型使用-->
+        <attr name="superBackgroundColor" format="color"/>
+        <!--是否启用点击位点下方的下划线-->
+        <attr name="superTextEnableClickUnderline" format="boolean"/>
+        <!--是否启用textview的排版优化功能，主要用于优化默认textview因为中英文、数字混排时导致的换行异常问题，默认开启-->
+        <attr name="superTextEnableSetType" format="boolean"/>
+        <!--字符间距-->
+        <attr name="wordSpacingMultiplier" format="float"/>
+        <!--是否打开竖排文字的显示-->
+        <attr name="superTextEnablePortrait" format="boolean"/>
+        <!--这个属性针对的时竖排文字-->
+        <attr name="superTextGravity" format="enum">
+            <!--从左边开始绘制文字-->
+            <enum name="start" value="0"/>
+            <!--从右边开始绘制文字-->
+            <enum name="end" value="1"/>
+            <!--从左边、中间位置开始绘制竖排文字-->
+            <enum name="centerStart" value="2"/>
+            <!--从右边、中间位置开始绘制竖排文字-->
+            <enum name="centerEnd" value="3"/>
+        </attr>
+        <!--追加文字到文本末尾，追加的文本始终位于文本最右边，追加文本与文本之间使用空格当做占位符-->
+        <attr name="superTextAddToEndText" format="string"/>
+    </declare-styleable>
+</resources>
