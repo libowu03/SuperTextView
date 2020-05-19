@@ -123,14 +123,26 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
             roundValue.set(6,superCorner)
             roundValue.set(7,superCorner)
         }else{
-            roundValue.set(0,superTopLeftCorner)
+         /*   roundValue.set(0,superTopLeftCorner)
             roundValue.set(1,superBottomLeftCorner)
             roundValue.set(2,superBottomRightCorner)
             roundValue.set(3,superTopRightCorner)
-            roundValue.set(4,0f)
-            roundValue.set(5,0f)
-            roundValue.set(6,0f)
-            roundValue.set(7,0f)
+            roundValue.set(4,superTopLeftCorner)
+            roundValue.set(5,superBottomLeftCorner)
+            roundValue.set(6,superBottomRightCorner)
+            roundValue.set(7,superTopRightCorner)*/
+            //左上角
+            roundValue.set(0,superTopLeftCorner)
+            roundValue.set(1,superTopLeftCorner)
+            //右上角
+            roundValue.set(2,superTopRightCorner)
+            roundValue.set(3,superTopRightCorner)
+            //右下角
+            roundValue.set(4,superBottomRightCorner)
+            roundValue.set(5,superBottomRightCorner)
+            //左下角
+            roundValue.set(6,superBottomLeftCorner)
+            roundValue.set(7,superBottomLeftCorner)
         }
     }
 

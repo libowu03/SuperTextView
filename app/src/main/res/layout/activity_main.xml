@@ -25,7 +25,7 @@
         android:gravity="center"
         android:id="@+id/testTwo"
         app:superTextStartPosition="0"
-        app:superCorner="10dp"
+        android:layout_marginStart="10dp"
         app:superTextEndPosition="5"
         android:paddingStart="10dp"
         android:paddingEnd="10dp"
