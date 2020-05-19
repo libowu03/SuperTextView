@@ -1,10 +1,9 @@
 package com.textutils.textview.view
 
 import android.content.Context
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Paint
-import android.graphics.Typeface
+import android.graphics.*
+import android.graphics.drawable.GradientDrawable
+import android.os.Build
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.text.TextPaint
@@ -13,10 +12,11 @@ import android.text.style.*
 import android.util.AttributeSet
 import android.util.Log
 import android.view.View
-import com.textutils.textview.utils.ModuleUtils
 import com.textutils.textview.R
 import com.textutils.textview.SuperTextClickListener
+import com.textutils.textview.utils.ModuleUtils
 import com.textutils.textview.utils.TextUtils
+
 
 /**
  * 基于安卓textview进行修改,目的是方便各种样式的设置
@@ -66,8 +66,24 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
     var superTextGravity:Int = 1
     //追加文本,即在行位添加需要追加的文案
     var addToEndText:String?=null
+    //左上角圆角
+    var superTopLeftCorner:Float = 0f
+    //左下角圆角
+    var superTopRightCorner:Float = 0f
+    //左下角圆角
+    var superBottomLeftCorner:Float = 0f
+    //右上角圆角
+    var superBottomRightCorner:Float = 0f
+    //四个角的圆角
+    var superCorner:Float = 0f
+    //圆角颜色填充
+    var superSolidColor = Color.TRANSPARENT
+
     //保存匹配字符的位置信息集合
     private var matchStrArray: ArrayList<String> = ArrayList()
+    //绘制背景的paint
+    private var backgroundSrcPaint:Paint = Paint()
+    private var roundValue = Array<Float>(8,{0f})
 
 
 
@@ -87,6 +103,35 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
         portraitStyleMap = HashMap()
         getParameter(attr, def)
         initData()
+        initCornr()
+        //设置绘制背景的画板
+        backgroundSrcPaint.color = superSolidColor
+        backgroundSrcPaint.isAntiAlias = true
+    }
+
+    /**
+     * 设置圆角
+     */
+    private fun initCornr() {
+        if (superCorner != 0f){
+            roundValue.set(0,superCorner)
+            roundValue.set(1,superCorner)
+            roundValue.set(2,superCorner)
+            roundValue.set(3,superCorner)
+            roundValue.set(4,superCorner)
+            roundValue.set(5,superCorner)
+            roundValue.set(6,superCorner)
+            roundValue.set(7,superCorner)
+        }else{
+            roundValue.set(0,superTopLeftCorner)
+            roundValue.set(1,superBottomLeftCorner)
+            roundValue.set(2,superBottomRightCorner)
+            roundValue.set(3,superTopRightCorner)
+            roundValue.set(4,0f)
+            roundValue.set(5,0f)
+            roundValue.set(6,0f)
+            roundValue.set(7,0f)
+        }
     }
 
     /**
@@ -114,6 +159,12 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
         wordSpacingMultiplier = parameterType.getFloat(R.styleable.SuperTextView_wordSpacingMultiplier, 1.0f)
         superTextGravity = parameterType.getInt(R.styleable.SuperTextView_superTextGravity, 1)
         addToEndText = parameterType.getString(R.styleable.SuperTextView_superTextAddToEndText)
+        superTopLeftCorner = parameterType.getDimension(R.styleable.SuperTextView_superTopLeftCorner,0f)
+        superTopRightCorner = parameterType.getDimension(R.styleable.SuperTextView_superTopRightCorner,0f)
+        superBottomLeftCorner = parameterType.getDimension(R.styleable.SuperTextView_superBottomLeftCorner,0f)
+        superBottomRightCorner = parameterType.getDimension(R.styleable.SuperTextView_superBottomRightCorner,0f)
+        superCorner = parameterType.getDimension(R.styleable.SuperTextView_superCorner,0f)
+        superSolidColor = parameterType.getColor(R.styleable.SuperTextView_superSolidColor,Color.TRANSPARENT)
         parameterType.recycle()
     }
 
@@ -213,9 +264,8 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
     /**
      * 设置删除线
      */
-    fun setSpanLine(startPosition:Int = this.startPosition,endPosition:Int = this.endPosition,includeClick:Boolean = false) {
-      setPositionStyle(startPosition,endPosition,
-          SuperTextConfig.Style.LINE,includeClick)
+    fun setSpanLine(startPosition:Int = this.startPosition,endPosition:Int = this.endPosition) {
+      setPositionStyle(startPosition,endPosition, SuperTextConfig.Style.LINE,false)
     }
 
     /**
@@ -232,9 +282,9 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
     /**
      * 设置删下划线
      */
-    fun setSpanUnderline(startPosition:Int = this.startPosition,endPosition:Int = this.endPosition,includeClick:Boolean = false) {
+    fun setSpanUnderline(startPosition:Int = this.startPosition,endPosition:Int = this.endPosition) {
         setPositionStyle(startPosition,endPosition,
-            SuperTextConfig.Style.UNDER_LINE,includeClick)
+            SuperTextConfig.Style.UNDER_LINE)
     }
 
     /**
@@ -253,9 +303,9 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
     /**
      * 设置粗体
      */
-    fun setSpanBold(startPosition:Int = this.startPosition,endPosition:Int = this.endPosition,includeClick:Boolean = false) {
+    fun setSpanBold(startPosition:Int = this.startPosition,endPosition:Int = this.endPosition) {
         setPositionStyle(startPosition,endPosition,
-            SuperTextConfig.Style.BOLD,includeClick)
+            SuperTextConfig.Style.BOLD)
     }
 
     /**
@@ -272,9 +322,9 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
     /**
      * 设置斜体
      */
-    fun setSpanItalic(startPosition:Int = this.startPosition,endPosition:Int = this.endPosition,includeClick:Boolean = false) {
+    fun setSpanItalic(startPosition:Int = this.startPosition,endPosition:Int = this.endPosition) {
         setPositionStyle(startPosition,endPosition,
-            SuperTextConfig.Style.ITALIC,includeClick)
+            SuperTextConfig.Style.ITALIC)
     }
 
     /**
@@ -292,9 +342,9 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
     /**
      * 设置缩放比例
      */
-    fun setSpanScalePercent(startPosition:Int = this.startPosition,endPosition:Int = this.endPosition,scalePercent:Float = superTextScalePrecent,includeClick:Boolean = false) {
+    fun setSpanScalePercent(startPosition:Int = this.startPosition,endPosition:Int = this.endPosition,scalePercent:Float = superTextScalePrecent) {
         setPositionStyle(startPosition,endPosition,
-            SuperTextConfig.Style.SCALE_PERCENT,includeClick,0,0,0,scalePercent,0)
+            SuperTextConfig.Style.SCALE_PERCENT,false,0,0,0,scalePercent,0)
     }
 
     /**
@@ -311,9 +361,9 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
     /**
      * 设置缩放大小
      */
-    fun setSpanScaleValue(startPosition:Int = this.startPosition,endPosition:Int = this.endPosition,superTextSize:Int = this.superTextSize,includeClick:Boolean = false) {
+    fun setSpanScaleValue(startPosition:Int = this.startPosition,endPosition:Int = this.endPosition,superTextSize:Int = this.superTextSize) {
         setPositionStyle(startPosition,endPosition,
-            SuperTextConfig.Style.SCALE_VALUE,includeClick,0,0,0,0f,superTextSize)
+            SuperTextConfig.Style.SCALE_VALUE,false,0,0,0,0f,superTextSize)
     }
 
     /**
@@ -331,9 +381,9 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
     /**
      * 设置特殊样式背景色
      */
-    fun setSpanBackgroundColor(startPosition:Int = this.startPosition,endPosition:Int = this.endPosition,backgroundColor:Int = this.superTextBackgroundColor,includeClick:Boolean = false) {
+    fun setSpanBackgroundColor(startPosition:Int = this.startPosition,endPosition:Int = this.endPosition,backgroundColor:Int = this.superTextBackgroundColor) {
         setPositionStyle(startPosition,endPosition,
-            SuperTextConfig.Style.BACKGROUND_COLOR,includeClick,0,backgroundColor,0,0f,0)
+            SuperTextConfig.Style.BACKGROUND_COLOR,false,0,backgroundColor,0,0f,0)
     }
 
     /**
@@ -350,9 +400,9 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
     /**
      * 设置特殊样式字体颜色
      */
-    fun setSpanColor(startPosition:Int = this.startPosition,endPosition:Int = this.endPosition,superTextColor :Int = this.superColor,includeClick:Boolean = false) {
+    fun setSpanColor(startPosition:Int = this.startPosition,endPosition:Int = this.endPosition,superTextColor :Int = this.superColor) {
         setPositionStyle(startPosition,endPosition,
-            SuperTextConfig.Style.COLOR,includeClick,superTextColor,0,0,0f,0)
+            SuperTextConfig.Style.COLOR,false,superTextColor,0,0,0f,0)
     }
 
     /**
@@ -369,9 +419,9 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
     /**
      * 设置特殊样式字体点击
      */
-    fun setSpanClick(startPosition:Int = this.startPosition,endPosition:Int = this.endPosition,enableUnderLine :Boolean = this.enableClickUnderLine,includeClick:Boolean = false) {
+    fun setSpanClick(startPosition:Int = this.startPosition,endPosition:Int = this.endPosition,enableUnderLine :Boolean = this.enableClickUnderLine) {
         setPositionStyle(startPosition,endPosition,
-            SuperTextConfig.Style.CLICK,includeClick,0,0,0,0f,0,enableUnderLine)
+            SuperTextConfig.Style.CLICK,false,0,0,0,0f,0,enableUnderLine)
     }
 
     /**
@@ -449,6 +499,20 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
         setUrlStrStyle(matchArray,SuperTextConfig.Style.SCALE_PERCENT,0,0,0f,scaleValue,enableUnderlink)
     }
 
+    /**
+     * 设置图片
+     * @param startPosition 特殊样样式起始位置
+     * @param endPosition 特殊样式结束位置
+     * @param img 图片
+     * @param isRefreshNow 是否设置后立即属性
+     */
+    fun setSpanImage(startPosition: Int = this.startPosition, endPosition: Int = this.endPosition, img: Int,isCenter:Boolean = false) {
+        setPositionStyle(startPosition,endPosition,SuperTextConfig.Style.IMG,false,0,0,img,0f,0,false,isCenter)
+    }
+
+    fun setSpanImage(matchStr: String,img: Int,matchAll: Boolean=false,isCenter:Boolean = true,indexArray: Array<Int>?=null) {
+        setMatchStrStyle(matchStr,matchAll,indexArray,SuperTextConfig.Style.IMG,0,0,img,0f,0,false,isCenter)
+    }
 
     /**
      * 获取开始和结束位置,同时使用compareText()方法做一些赋值操作,位真正开始设置样式做准备
@@ -460,27 +524,27 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
      * @param scalePercent 字体缩放比例
      * @param scaleValue 字体缩放的具体大小
      */
-    private fun setPositionStyle(startPosition:Int = this.startPosition,endPosition:Int = this.endPosition,type:Int,includeClick:Boolean,superTextColor:Int = 0,backgroundColor:Int=0,img:Int=0,scalePercent: Float = this.superTextScalePrecent,scaleValue:Int=this.superTextSize,enableUnderLine: Boolean = this.enableClickUnderLine){
+    private fun setPositionStyle(startPosition:Int = this.startPosition,endPosition:Int = this.endPosition,type:Int,includeClick:Boolean = false,superTextColor:Int = 0,backgroundColor:Int=this.superTextBackgroundColor,img:Int=0,scalePercent: Float = this.superTextScalePrecent,scaleValue:Int=this.superTextSize,enableUnderLine: Boolean = this.enableClickUnderLine,isCenter: Boolean = false){
         compareText()
         //获取开始和结束位置
         if (!matchStr.isNullOrEmpty()){
             for (item in matchStrArray){
                 val startIndex = item.split(",")[0]
                 val endIndex = item.split(",")[1]
-                setSuperStyle(startIndex.toInt(),endIndex.toInt(),type,includeClick,superTextColor,backgroundColor,img,scalePercent,scaleValue,false)
+                setSuperStyle(startIndex.toInt(),endIndex.toInt(),type,includeClick,superTextColor,backgroundColor,img,scalePercent,scaleValue,false,enableUnderLine,isCenter)
             }
             text = stringBuffer
         }else{
             val tempStartPosition = getStartAndEndPosition(startPosition,endPosition).get(0)
             val tempEndPosition = getStartAndEndPosition(startPosition,endPosition).get(1)
-            setSuperStyle(tempStartPosition,tempEndPosition,type,includeClick,superTextColor,backgroundColor,img,scalePercent,scaleValue)
+            setSuperStyle(tempStartPosition,tempEndPosition,type,includeClick,superTextColor,backgroundColor,img,scalePercent,scaleValue,true,enableUnderLine,isCenter)
         }
     }
 
     /**
      * 通過字符串匹配獲取开始位置和解锁位置
      */
-    private fun setMatchStrStyle(matchStr:String,matchAll:Boolean,indexArray:Array<Int>?,type:Int,superTextColor:Int = 0,backgroundColor:Int=0,img:Int=0,scalePercent: Float = this.superTextScalePrecent,scaleValue:Int=this.superTextSize,enableUnderLine: Boolean = this.enableClickUnderLine){
+    private fun setMatchStrStyle(matchStr:String,matchAll:Boolean,indexArray:Array<Int>?,type:Int,superTextColor:Int = 0,backgroundColor:Int=0,img:Int=0,scalePercent: Float = this.superTextScalePrecent,scaleValue:Int=this.superTextSize,enableUnderLine: Boolean = this.enableClickUnderLine,isCenter: Boolean = false){
         val isReset = compareText()
         matchEverySameStr = matchAll
         if (matchAll){
@@ -506,7 +570,7 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
                             break
                         }
                         //Log.e("日志","循环结果："+item)
-                        setSuperStyle(startIndex,endIndex,type,false,superTextColor,backgroundColor,img,scalePercent,scaleValue,false)
+                        setSuperStyle(startIndex,endIndex,type,false,superTextColor,backgroundColor,img,scalePercent,scaleValue,false,enableUnderLine,isCenter)
                     }
                 }else{
                     //获取匹配目标的开始和结束位置
@@ -515,7 +579,7 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
                     if (endIndex > text.length) {
                         break
                     }
-                    setSuperStyle(startIndex,endIndex,type,false,superTextColor,backgroundColor,img,scalePercent,scaleValue,false)
+                    setSuperStyle(startIndex,endIndex,type,false,superTextColor,backgroundColor,img,scalePercent,scaleValue,false,enableUnderLine,isCenter)
                 }
             }
             text = stringBuffer
@@ -532,7 +596,7 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
             if (endIndex > text.toString().length){
                 endIndex = text.toString().length
             }
-            setSuperStyle(startIndex,endIndex,type,false,superTextColor,backgroundColor,img,scalePercent,scaleValue,true)
+            setSuperStyle(startIndex,endIndex,type,false,superTextColor,backgroundColor,img,scalePercent,scaleValue,true,enableUnderLine,isCenter)
         }
     }
 
@@ -584,7 +648,7 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
      * @param scaleValue 字体缩放的具体大小
      * @param refreshNow 是否马上刷新,当出现for循环时,此属性会改为false,避免textview多次重复绘制浪费不必要的资源
      */
-    private fun setSuperStyle(startPosition:Int = this.startPosition,endPosition:Int = this.endPosition,type:Int,includeClick:Boolean,superTextColor:Int = 0,backgroundColor:Int=0,img:Int=0,scalePercent: Float = this.superTextScalePrecent,scaleValue:Int=this.superTextSize,refreshNow:Boolean = true,enableUnderLine: Boolean = this.enableClickUnderLine){
+    private fun setSuperStyle(startPosition:Int = this.startPosition,endPosition:Int = this.endPosition,type:Int,includeClick:Boolean,superTextColor:Int = 0,backgroundColor:Int=this.superTextBackgroundColor,img:Int=0,scalePercent: Float = this.superTextScalePrecent,scaleValue:Int=this.superTextSize,refreshNow:Boolean = true,enableUnderLine: Boolean = this.enableClickUnderLine,isCenter: Boolean = false){
         when (type) {
             SuperTextConfig.Style.LINE -> {
                 val lineStype = StrikethroughSpan()
@@ -631,10 +695,25 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
             SuperTextConfig.Style.BACKGROUND_COLOR -> {
                 val backgroundColorSpan = BackgroundColorSpan(backgroundColor)
                 stringBuffer?.setSpan(backgroundColorSpan, startPosition, endPosition, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                if (refreshNow){
+                    text = stringBuffer
+                }
             }
             SuperTextConfig.Style.COLOR -> {
                 val lineStype = ForegroundColorSpan(superTextColor)
                 stringBuffer?.setSpan(lineStype, startPosition, endPosition, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                if (refreshNow){
+                    text = stringBuffer
+                }
+            }
+            SuperTextConfig.Style.IMG -> {
+                if (isCenter){
+                    val imgspan = CenterAlignImageSpan(context!!, img)
+                    stringBuffer?.setSpan(imgspan, startPosition, endPosition, Spanned.SPAN_INCLUSIVE_EXCLUSIVE)
+                }else{
+                    val imgspan = ImageSpan(context!!, img)
+                    stringBuffer?.setSpan(imgspan, startPosition, endPosition, Spanned.SPAN_INCLUSIVE_EXCLUSIVE)
+                }
                 if (refreshNow){
                     text = stringBuffer
                 }
@@ -672,6 +751,9 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
             //竖排文字
             drawPortraintText(canvas)
         } else {
+            val path = Path()
+            path.addRoundRect(RectF(0f,0f,canvas!!.width.toFloat(),canvas!!.height.toFloat()),roundValue.toFloatArray(),Path.Direction.CW)
+            canvas.drawPath(path,backgroundSrcPaint)
             //普通排版
             drawAddTo(canvas)
             super.onDraw(canvas)
@@ -915,6 +997,8 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
             const val COLOR = 7
             //点击
             const val CLICK = 8
+            //图片
+            const val IMG = 10
         }
     }
 }

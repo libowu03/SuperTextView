@@ -60,5 +60,18 @@
         </attr>
         <!--追加文字到文本末尾，追加的文本始终位于文本最右边，追加文本与文本之间使用空格当做占位符-->
         <attr name="superTextAddToEndText" format="string"/>
+        <!--左上角圆角-->
+        <attr name="superTopLeftCorner" format="dimension"/>
+        <!--右上角圆角-->
+        <attr name="superTopRightCorner" format="dimension"/>
+        <!--右下角圆角-->
+        <attr name="superBottomRightCorner" format="dimension"/>
+        <!--左下角圆角-->
+        <attr name="superBottomLeftCorner" format="dimension"/>
+        <!--四个方向圆角-->
+        <attr name="superCorner" format="dimension"/>
+        <!--设置圆角背景时填充的颜色-->
+        <attr name="superSolidColor" format="color"/>
+
     </declare-styleable>
 </resources>

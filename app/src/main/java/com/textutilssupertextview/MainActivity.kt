@@ -12,7 +12,17 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        testOne.text = "李博武你好https://www.baidu.com饭店开房接口放到付款李博武你好https://www.baidu.com饭店开房接口放到付款李博武你好https://www.baidu.com饭店开房接口放到付款李博武你好https://www.baidu.com饭店开房接口放到付款"
+        testOne.setSpanColor(0,1,Color.RED)
+        testTwo.setSpanColor("Hello",Color.RED)
+        testThree.setSpanItalic(0,1)
+        testFour.setSpanItalic("Hello")
+        testFive.setSpanBold(0,1)
+        testSix.setSpanBold("Hello")
+        testOneSeven.setSpanBackgroundColor(0,1,Color.RED)
+        testOneEight.setSpanImage(0,1,R.drawable.ic_launcher,true)
+        testNice.setSpanBackgroundColor("Hello",Color.RED)
+        testTen.setSpanClick(0,1)
+        testTen.setSpanClick("World",false)
         
     }
 }
