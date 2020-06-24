@@ -845,6 +845,9 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
             //竖排文字
             drawPortraintText(canvas)
         } else {
+            val path = Path()
+            path.addRoundRect(RectF(0f,0f,width.toFloat(),height.toFloat()),roundValue.toFloatArray(),Path.Direction.CW)
+            canvas?.drawPath(path,backgroundSrcPaint)
             //普通排版
             drawAddTo(canvas)
             super.onDraw(canvas)
@@ -883,12 +886,12 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
                     col++
                 }
                 //计算文字x坐标
-              /*  var x = startX.toFloat() + (paint.measureText(portaitStr))*row
-                if (superTextGravity == SuperTextConfig.Gravity.START){
+                var x = startX.toFloat() + (paint.measureText(portaitStr))*row
+                if (superTextGravity == SuperTextConfig.Gravity.LEFT){
                     x = startX.toFloat() + (paint.measureText(portaitStr))*row
-                }else if (superTextGravity == SuperTextConfig.Gravity.END){
+                }else if (superTextGravity == SuperTextConfig.Gravity.RIGHT){
                     x = endX - (paint.measureText(portaitStr))*row - paint.measureText(portaitStr)
-                }*/
+                }
                 //绘制文本
                 canvas.drawText(item.value.toString(), x,y,paint)
             }

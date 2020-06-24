@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -11,147 +10,163 @@
     <com.textutils.textview.view.SuperTextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:superTextEnablePortrait="true"
-        android:lineSpacingMultiplier="1.2"
-        app:superCorner="10dp"
-        app:superSolidColor="@color/colorPrimary"
         android:layout_margin="10dp"
+        android:gravity="center_horizontal"
+        android:lineSpacingMultiplier="1.2"
         android:maxLines="6"
         android:padding="10dp"
-        app:superTextGravity="start"
-        android:gravity="center_horizontal"
-        android:text="白日依山尽，黄河入海流。欲穷千里目，更上一层楼。"/>
+        android:text="白日依山尽，黄河入海流。欲穷千里目，更上一层楼。"
+        app:superTextEnablePortrait="true"
+        app:superTextGravity="start" />
 
     <com.textutils.textview.view.SuperTextView
+        android:id="@+id/testOne"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/testOne"
-        app:superTextStartPosition="1"
-        app:superTextEndPosition="2"
-        app:superTextViewType="superscript"
-        android:textColor="@color/colorPrimary"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:gravity="center"
         android:text="方面大家看法呢放电脑卡烦恼"
+        android:textColor="@color/colorPrimary"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:superCorner="10dp"
+        app:superTextEndPosition="2"
+        app:superTextStartPosition="1"
+        app:superTextViewType="superscript" />
+
     <com.textutils.textview.view.SuperTextView
+        android:id="@+id/testTwo"
         android:layout_width="match_parent"
         android:layout_height="30dp"
-        android:text="Hello World!"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
         android:gravity="center"
-        app:superTextAddToEndText="点击了解更多"
-        android:id="@+id/testTwo"
-        app:superTextStartPosition="0"
-        app:superTextEndPosition="5"
-        android:textColor="#000000"
-        app:superSolidColor="@color/colorPrimary"
-        app:superCorner="10dp"
         android:paddingStart="10dp"
         android:paddingEnd="10dp"
+        android:text="Hello World!"
+        android:textColor="#000000"
+        android:textSize="12dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:superBottomLeftCorner="20dp"
+        app:superSolidColor="@color/colorPrimary"
+        app:superTextAddToEndText="点击了解更多"
+        app:superTextEndPosition="5"
+        app:superTextStartPosition="0"
+        app:superTopRightCorner="20dp" />
+
     <com.textutils.textview.view.SuperTextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hello World!"
         android:id="@+id/testThree"
-        app:superTextStartPosition="0"
-        app:superTextEndPosition="5"
-        app:superTextColor="@color/colorPrimary"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-    <com.textutils.textview.view.SuperTextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Hello World!"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:superTextColor="@color/colorPrimary"
+        app:superTextEndPosition="5"
+        app:superTextStartPosition="0" />
+
+    <com.textutils.textview.view.SuperTextView
         android:id="@+id/testFour"
-        app:superTextStartPosition="0"
-        app:superTextEndPosition="5"
-        app:superTextColor="@color/colorPrimary"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-    <com.textutils.textview.view.SuperTextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Hello World!"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:superTextColor="@color/colorPrimary"
+        app:superTextEndPosition="5"
+        app:superTextStartPosition="0" />
+
+    <com.textutils.textview.view.SuperTextView
         android:id="@+id/testFive"
-        app:superTextStartPosition="0"
-        app:superTextEndPosition="5"
-        app:superTextColor="@color/colorPrimary"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-    <com.textutils.textview.view.SuperTextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Hello World!"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:superTextColor="@color/colorPrimary"
+        app:superTextEndPosition="5"
+        app:superTextStartPosition="0" />
+
+    <com.textutils.textview.view.SuperTextView
         android:id="@+id/testSix"
-        app:superTextStartPosition="0"
-        app:superTextEndPosition="5"
-        app:superTextColor="@color/colorPrimary"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-    <com.textutils.textview.view.SuperTextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Hello World!"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:superTextColor="@color/colorPrimary"
+        app:superTextEndPosition="5"
+        app:superTextStartPosition="0" />
+
+    <com.textutils.textview.view.SuperTextView
         android:id="@+id/testOneSeven"
-        app:superTextStartPosition="0"
-        app:superTextEndPosition="5"
-        app:superTextColor="@color/colorPrimary"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-    <com.textutils.textview.view.SuperTextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Hello World!"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:superTextColor="@color/colorPrimary"
+        app:superTextEndPosition="5"
+        app:superTextStartPosition="0" />
+
+    <com.textutils.textview.view.SuperTextView
         android:id="@+id/testOneEight"
-        app:superTextStartPosition="0"
-        app:superTextEndPosition="5"
-        app:superTextColor="@color/colorPrimary"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-    <com.textutils.textview.view.SuperTextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Hello World!"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:superTextColor="@color/colorPrimary"
+        app:superTextEndPosition="5"
+        app:superTextStartPosition="0" />
+
+    <com.textutils.textview.view.SuperTextView
         android:id="@+id/testNice"
-        app:superTextStartPosition="0"
-        app:superTextEndPosition="5"
-        app:superTextColor="@color/colorPrimary"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-    <com.textutils.textview.view.SuperTextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Hello World!"
-        android:id="@+id/testTen"
-        app:superTextStartPosition="0"
-        app:superTextEndPosition="5"
-        app:superTextColor="@color/colorPrimary"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:superTextColor="@color/colorPrimary"
+        app:superTextEndPosition="5"
+        app:superTextStartPosition="0" />
+
+    <com.textutils.textview.view.SuperTextView
+        android:id="@+id/testTen"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Hello World!"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:superTextColor="@color/colorPrimary"
+        app:superTextEndPosition="5"
+        app:superTextStartPosition="0" />
+
     <Button
+        android:id="@+id/testOneBtn"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="测试"
-        android:id="@+id/testOneBtn"/>
+        android:text="测试" />
 </LinearLayout>
