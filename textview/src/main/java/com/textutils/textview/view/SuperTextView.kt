@@ -157,8 +157,8 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
         superTextScalePrecent = parameterType.getFloat(R.styleable.SuperTextView_superTextScale, 1.0f)
         superTextBackgroundColor = parameterType.getColor(R.styleable.SuperTextView_superBackgroundColor, Color.parseColor("#74E1FF"))
         enableClickUnderLine = parameterType.getBoolean(R.styleable.SuperTextView_superTextEnableClickUnderline, true)
-        enableVerticalType = parameterType.getBoolean(R.styleable.SuperTextView_superTextEnableSetType, true)
-        wordSpacingMultiplier = parameterType.getFloat(R.styleable.SuperTextView_wordSpacingMultiplier, 1.0f)
+        //enableVerticalType = parameterType.getBoolean(R.styleable.SuperTextView_superTextEnableSetType, true)
+        //wordSpacingMultiplier = parameterType.getFloat(R.styleable.SuperTextView_wordSpacingMultiplier, 1.0f)
         superTextGravity = parameterType.getInt(R.styleable.SuperTextView_superTextGravity, 1)
         addToEndText = parameterType.getString(R.styleable.SuperTextView_superTextAddToEndText)
         superTopLeftCorner = parameterType.getDimension(R.styleable.SuperTextView_superTopLeftCorner,0f)
@@ -256,8 +256,6 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
             }
             SuperTextConfig.Style.SUPERSCRIPT -> {
                 setSpanSuperscript()
-            }
-
             }
         }
     }
@@ -885,12 +883,12 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
                     col++
                 }
                 //计算文字x坐标
-                var x = startX.toFloat() + (paint.measureText(portaitStr))*row
+              /*  var x = startX.toFloat() + (paint.measureText(portaitStr))*row
                 if (superTextGravity == SuperTextConfig.Gravity.START){
                     x = startX.toFloat() + (paint.measureText(portaitStr))*row
                 }else if (superTextGravity == SuperTextConfig.Gravity.END){
                     x = endX - (paint.measureText(portaitStr))*row - paint.measureText(portaitStr)
-                }
+                }*/
                 //绘制文本
                 canvas.drawText(item.value.toString(), x,y,paint)
             }
