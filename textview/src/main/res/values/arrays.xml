@@ -84,6 +84,10 @@
         <attr name="superCorner" format="dimension"/>
         <!--设置圆角背景时填充的颜色-->
         <attr name="superSolidColor" format="color"/>
+        <!--设置描边的颜色-->
+        <attr name="superStrokeColor" format="color"/>
+        <!--设置描边的粗细-->
+        <attr name="superStrokeWidth" format="dimension"/>
 
     </declare-styleable>
 </resources>

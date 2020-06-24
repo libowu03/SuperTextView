@@ -14,7 +14,9 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         testOne.text = "反倒可能发放到"
         testOne.setSpanSuperscript("放")
-        testOne.setSpanScalePercent("放",0.5f)
+            .setSpanColor("放",Color.RED)
+            .setSpanScalePercent("放",0.5f)
+
         testOne.setSpanColor(0,1,Color.RED)
         testTwo.setSpanColor("Hello",Color.RED)
         testThree.setSpanItalic(0,1)

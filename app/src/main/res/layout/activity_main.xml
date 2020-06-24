@@ -50,15 +50,15 @@
         android:textColor="#000000"
         android:textSize="12dp"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:superCorner="20dp"
+        app:superStrokeColor="@color/colorAccent"
+        app:superStrokeWidth="1dp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:superBottomLeftCorner="20dp"
-        app:superSolidColor="@color/colorPrimary"
         app:superTextAddToEndText="点击了解更多"
         app:superTextEndPosition="5"
-        app:superTextStartPosition="0"
-        app:superTopRightCorner="20dp" />
+        app:superTextStartPosition="0"/>
 
     <com.textutils.textview.view.SuperTextView
         android:id="@+id/testThree"
