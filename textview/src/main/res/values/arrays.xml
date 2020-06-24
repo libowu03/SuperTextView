@@ -54,9 +54,9 @@
         <!--是否启用点击位点下方的下划线-->
         <attr name="superTextEnableClickUnderline" format="boolean"/>
         <!--是否启用textview的排版优化功能，主要用于优化默认textview因为中英文、数字混排时导致的换行异常问题，默认开启-->
-        <attr name="superTextEnableSetType" format="boolean"/>
+      <!--  <attr name="superTextEnableSetType" format="boolean"/>-->
         <!--字符间距-->
-        <attr name="wordSpacingMultiplier" format="float"/>
+        <!--<attr name="wordSpacingMultiplier" format="float"/>-->
         <!--是否打开竖排文字的显示-->
         <attr name="superTextEnablePortrait" format="boolean"/>
         <!--这个属性针对的时竖排文字-->
@@ -65,10 +65,10 @@
             <enum name="start" value="0"/>
             <!--从右边开始绘制文字-->
             <enum name="end" value="1"/>
-            <!--从左边、中间位置开始绘制竖排文字-->
+<!--            &lt;!&ndash;从左边、中间位置开始绘制竖排文字&ndash;&gt;
             <enum name="centerStart" value="2"/>
-            <!--从右边、中间位置开始绘制竖排文字-->
-            <enum name="centerEnd" value="3"/>
+            &lt;!&ndash;从右边、中间位置开始绘制竖排文字&ndash;&gt;
+            <enum name="centerEnd" value="3"/>-->
         </attr>
         <!--追加文字到文本末尾，追加的文本始终位于文本最右边，追加文本与文本之间使用空格当做占位符-->
         <attr name="superTextAddToEndText" format="string"/>
