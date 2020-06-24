@@ -12,6 +12,9 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        testOne.text = "反倒可能发放到"
+        testOne.setSpanSuperscript("放")
+        testOne.setSpanScalePercent("放",0.5f)
         testOne.setSpanColor(0,1,Color.RED)
         testTwo.setSpanColor("Hello",Color.RED)
         testThree.setSpanItalic(0,1)
@@ -23,6 +26,5 @@ class MainActivity : AppCompatActivity() {
         testNice.setSpanBackgroundColor("Hello",Color.RED)
         testTen.setSpanClick(0,1)
         testTen.setSpanClick("World",false)
-        
     }
 }

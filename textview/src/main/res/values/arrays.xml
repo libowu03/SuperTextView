@@ -20,13 +20,25 @@
             <enum name="backgroundColor" value="6"/>
             <!--设置字体颜色-->
             <enum name="color" value="7"/>
+            <!--角标上-->
+            <enum name="subscript" value="11"/>
+            <!--角标下-->
+            <enum name="superscript" value="12"/>
         </attr>
         <!--使用特殊字符样式的字体颜色-->
         <attr name="superTextColor" format="color"/>
         <!--使用特殊字符样式的开始位置-->
-        <attr name="superTextStartPosition" format="integer"/>
+        <attr name="superTextStartPosition" format="integer">
+            <enum name="MAX" value="-1"/>
+            <enum name="MIN" value="-2"/>
+        </attr>
         <!--使用特殊样式的结束字符位置-->
-        <attr name="superTextEndPosition" format="integer"/>
+        <attr name="superTextEndPosition" format="integer">
+            <enum name="MAX" value="-1"/>
+            <enum name="MIN" value="-2"/>
+        </attr>
+
+
         <!--需要使用特殊样式的字符-->
         <attr name="superTextMatchStr" format="string"/>
         <!--将所有匹配到的字符都添加相同的效果,false时时匹配到字符串的第一个-->

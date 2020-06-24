@@ -180,6 +180,33 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
         parameterType.recycle()
     }
 
+    fun clearStyle(){
+        superColor = textColors.defaultColor
+        matchStr = ""
+        matchEverySameStr = false
+        startPosition = 0
+        endPosition = 0
+        styleType = SuperTextConfig.Style.COLOR
+        superTextSize = ModuleUtils.px2dip(context, superTextSize.toFloat())
+        superTextEnablePortrait = false
+        superTextScalePrecent = 1f
+        superTextBackgroundColor =  Color.parseColor("#74E1FF")
+        enableClickUnderLine = true
+        enableVerticalType = true
+        wordSpacingMultiplier = 1f
+        superTextGravity = 1
+        addToEndText = ""
+        superTopLeftCorner = 0f
+        superTopRightCorner = 0f
+        superBottomLeftCorner = 0f
+        superBottomRightCorner = 0f
+        superCorner = 0f
+        superSolidColor = Color.TRANSPARENT
+        stringBuffer?.clear()
+        stringBuffer = SpannableStringBuilder(text.toString())
+
+    }
+
     private fun initData() {
         if (text.toString().isNullOrEmpty()){
             return
@@ -187,13 +214,19 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
         //如果存在匹配的文案,先进行清除
         matchStrArray.clear()
         //大于文本长度时，设置为文本长度
-        if (endPosition > text.length) {
+        if (endPosition > text.length || endPosition == -1) {
             endPosition = text.length
         }
         //小于0时，设置开始位置为文本其实位置
-        if (startPosition < 0) {
+        if (startPosition == -2) {
+            startPosition = 0
+        }else if (0-startPosition > 0){
             startPosition = 0
         }
+/*        if (startPosition < endPosition){
+            startPosition = 0
+            endPosition = text.length
+        }*/
         stringBuffer = SpannableStringBuilder(text)
         matchStrArray.addAll(TextUtils.getMatchStrArray(matchStr,matchEverySameStr,text.toString(),text.toString()))
         setStyle()
@@ -228,9 +261,13 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
             SuperTextConfig.Style.COLOR -> {
                 setSpanColor()
             }
-            SuperTextConfig.Style.CLICK -> {
-
+            SuperTextConfig.Style.SUBSCRIPT -> {
+                setSpanSubscript()
             }
+            SuperTextConfig.Style.SUPERSCRIPT -> {
+                setSpanSuperscript()
+            }
+
         }
     }
 
@@ -339,6 +376,7 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
             SuperTextConfig.Style.ITALIC)
     }
 
+
     /**
      * 设置删除线，设置依据为字符的匹配
      * @param matchStr 需要匹配的字符
@@ -348,6 +386,44 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
     fun setSpanItalic(matchStr:String,matchAll:Boolean = false,indexArray:Array<Int> ?= null){
         setMatchStrStyle(matchStr,matchAll,indexArray,
             SuperTextConfig.Style.ITALIC,0,0,0,0f,0)
+    }
+
+    /**
+     * 设置删除线，设置依据为字符的匹配
+     * @param matchStr 需要匹配的字符
+     * @param matchAll 是否在文中匹配所有该字符
+     * @param indexArray 需要匹配的index，比如如果只需要第二被改变样式，则此indexArray中应该放入2
+     */
+    fun setSpanSubscript(matchStr:String,matchAll:Boolean = false,indexArray:Array<Int> ?= null){
+        setMatchStrStyle(matchStr,matchAll,indexArray,
+            SuperTextConfig.Style.SUBSCRIPT,0,0,0,0f,0)
+    }
+
+    /**
+     * 设置斜体
+     */
+    fun setSpanSubscript(startPosition:Int = this.startPosition,endPosition:Int = this.endPosition) {
+        setPositionStyle(startPosition,endPosition,
+            SuperTextConfig.Style.SUBSCRIPT)
+    }
+
+    /**
+     * 设置删除线，设置依据为字符的匹配
+     * @param matchStr 需要匹配的字符
+     * @param matchAll 是否在文中匹配所有该字符
+     * @param indexArray 需要匹配的index，比如如果只需要第二被改变样式，则此indexArray中应该放入2
+     */
+    fun setSpanSuperscript(matchStr:String,matchAll:Boolean = false,indexArray:Array<Int> ?= null){
+        setMatchStrStyle(matchStr,matchAll,indexArray,
+            SuperTextConfig.Style.SUPERSCRIPT,0,0,0,0f,0)
+    }
+
+    /**
+     * 设置斜体
+     */
+    fun setSpanSuperscript(startPosition:Int = this.startPosition,endPosition:Int = this.endPosition) {
+        setPositionStyle(startPosition,endPosition,
+            SuperTextConfig.Style.SUPERSCRIPT)
     }
 
 
@@ -748,6 +824,20 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
                     text = stringBuffer
                 }
             }
+            SuperTextConfig.Style.SUBSCRIPT -> {
+                val lineStype = SubscriptSpan()
+                stringBuffer?.setSpan(lineStype, startPosition, endPosition, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                if (refreshNow){
+                    text = stringBuffer
+                }
+            }
+            SuperTextConfig.Style.SUPERSCRIPT -> {
+                val lineStype = SuperscriptSpan()
+                stringBuffer?.setSpan(lineStype, startPosition, endPosition, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                if (refreshNow){
+                    text = stringBuffer
+                }
+            }
         }
     }
 
@@ -759,6 +849,10 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
     }
 
     override fun onDraw(canvas: Canvas?) {
+        if(compareText()){
+            initData()
+            return
+        }
         if (superTextEnablePortrait) {
             //竖排文字
             drawPortraintText(canvas)
@@ -1011,6 +1105,10 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
             const val CLICK = 8
             //图片
             const val IMG = 10
+            //角标上
+            const val SUBSCRIPT = 11
+            //角标下
+            const val SUPERSCRIPT = 12
         }
     }
 }
