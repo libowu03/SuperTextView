@@ -15,7 +15,12 @@
         android:lineSpacingMultiplier="1.2"
         android:maxLines="6"
         android:padding="10dp"
+        app:stCorner="20dp"
+        app:stSolidColor="@color/colorAccent"
+        android:textColor="#ffffff"
         app:stFontFace="font.TTF"
+        android:textSize="18dp"
+        app:stWordSpacingMultiplier="1.5"
         android:text="白日依山尽，黄河入海流。欲穷千里目，更上一层楼。"
         app:stEnablePortrait="true"
         app:stGravity="start" />

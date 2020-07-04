@@ -84,7 +84,8 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
     //字体路径，请保存到assets文件夹中
     var superTextFontFace:String ?= ""
     //打印日志的标识
-    val LOG = "superText"
+    private val LOG = "superText"
+    private var isRefreshNow:Boolean = true
 
     //保存匹配字符的位置信息集合
     private var matchStrArray: ArrayList<String> = ArrayList()
@@ -190,6 +191,7 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
         superCorner = parameterType.getDimension(R.styleable.SuperTextView_stCorner,0f)
         superSolidColor = parameterType.getColor(R.styleable.SuperTextView_stSolidColor,Color.TRANSPARENT)
         superTextFontFace = parameterType.getString(R.styleable.SuperTextView_stFontFace)
+        wordSpacingMultiplier = parameterType.getFloat(R.styleable.SuperTextView_stWordSpacingMultiplier,1.0f)
         parameterType.recycle()
     }
 
@@ -719,11 +721,13 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
                 val endIndex = item.split(",")[1]
                 setSuperStyle(startIndex.toInt(),endIndex.toInt(),type,includeClick,superTextColor,backgroundColor,img,scalePercent,scaleValue,false,enableUnderLine,isCenter)
             }
-            text = stringBuffer
+            if (isRefreshNow){
+                text = stringBuffer
+            }
         }else{
             val tempStartPosition = getStartAndEndPosition(startPosition,endPosition).get(0)
             val tempEndPosition = getStartAndEndPosition(startPosition,endPosition).get(1)
-            setSuperStyle(tempStartPosition,tempEndPosition,type,includeClick,superTextColor,backgroundColor,img,scalePercent,scaleValue,true,enableUnderLine,isCenter)
+            setSuperStyle(tempStartPosition,tempEndPosition,type,includeClick,superTextColor,backgroundColor,img,scalePercent,scaleValue,isRefreshNow,enableUnderLine,isCenter)
         }
     }
 
@@ -769,7 +773,9 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
                     setSuperStyle(startIndex,endIndex,type,false,superTextColor,backgroundColor,img,scalePercent,scaleValue,false,enableUnderLine,isCenter)
                 }
             }
-            text = stringBuffer
+            if (isRefreshNow){
+                text = stringBuffer
+            }
         }else{
             //不需要匹配全部目标时,只需要匹配到文本的第一个目标即可
             var startIndex = text.toString().indexOf(matchStr)
@@ -783,7 +789,7 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
             if (endIndex > text.toString().length){
                 endIndex = text.toString().length
             }
-            setSuperStyle(startIndex,endIndex,type,false,superTextColor,backgroundColor,img,scalePercent,scaleValue,true,enableUnderLine,isCenter)
+            setSuperStyle(startIndex,endIndex,type,false,superTextColor,backgroundColor,img,scalePercent,scaleValue,isRefreshNow,enableUnderLine,isCenter)
         }
     }
 
@@ -820,6 +826,22 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
                 setSuperStyle(startIndex,endIndex,type,true,superTextColor,backgroundColor,0,scalePercent,scaleValue,false,enableUnderLine)
             }
         }
+        text = stringBuffer
+    }
+
+
+    /**
+     * 设置是否立马刷新
+     */
+    fun setIsRefreshNow(isRefreshNow:Boolean):SuperTextView{
+        this.isRefreshNow = isRefreshNow
+        return this
+    }
+
+    /**
+     * 立即刷新数据
+     */
+    fun refreshNow(){
         text = stringBuffer
     }
 
@@ -943,8 +965,9 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
     /**
      * 设置样式点击监听器
      */
-    fun setOnStyleFontClickListener(clickClickListener:SuperTextClickListener){
+    fun setOnStyleFontClickListener(clickClickListener:SuperTextClickListener):SuperTextView{
         this.clickCallback = clickClickListener
+        return this
     }
 
     override fun onDraw(canvas: Canvas?) {
@@ -965,6 +988,7 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
         val pathStroke = Path()
         pathStroke.addRoundRect(RectF(0f+strokePaint.strokeWidth/2,0f+strokePaint.strokeWidth/2,width.toFloat()-strokePaint.strokeWidth/2,height.toFloat()-strokePaint.strokeWidth/2),roundValue.toFloatArray(),Path.Direction.CW)
         canvas?.drawPath(pathStroke,strokePaint)
+
 
         if (superTextEnablePortrait) {
             //竖排文字
@@ -987,14 +1011,20 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
             val stopY = it.height - paddingBottom
             var row = 0
             var col = 0
+            paint.color = superColor
             for (item in text.withIndex()){
                 //行距最小距离为1，不允许小于1
                 var lineScale = lineSpacingMultiplier
+                var wordSscale = wordSpacingMultiplier
                 if (lineScale < 1){
                     lineScale = 1f
                 }
+                if (wordSscale < 1){
+                    wordSscale = 1f
+                }
                 //计算行距
                 val rowSpace = Math.abs(lineScale - 1.0f)*paint.measureText(portaitStr)
+                val colSpace = Math.abs(wordSscale - 1.0f)*paint.measureText(portaitStr)
                 //计算文字y坐标
                 var y = startY + (paint.measureText(portaitStr) + rowSpace )*col+paint.measureText(portaitStr)
                 //不允许y坐标超出画布
@@ -1009,9 +1039,9 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
                 //计算文字x坐标
                 var x = startX.toFloat() + (paint.measureText(portaitStr))*row
                 if (superTextGravity == SuperTextConfig.Gravity.LEFT){
-                    x = startX.toFloat() + (paint.measureText(portaitStr))*row
+                    x = startX.toFloat() + (paint.measureText(portaitStr)+colSpace)*row
                 }else if (superTextGravity == SuperTextConfig.Gravity.RIGHT){
-                    x = endX - (paint.measureText(portaitStr))*row - paint.measureText(portaitStr)
+                    x = endX - (paint.measureText(portaitStr)+colSpace)*row - paint.measureText(portaitStr)
                 }
                 //绘制文本
                 canvas.drawText(item.value.toString(), x,y,paint)
@@ -1026,6 +1056,20 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
      */
     private fun drawAddTo(canvas: Canvas?) {
         addToEndText?.let {
+         /*   val textWidth = paint.measureText(addToEndText)   // 文字宽度
+            val textHeight = -paint.ascent() + paint.descent()  // 文字高度
+            // 由于 StaticLayout 绘制文字时，默认画在Canvas的(0,0)点位置，所以居中绘制居中位置，需要将画布 translate到中间位置。
+            canvas?.translate(width-textWidth, height-textHeight)
+            val styleSpan = StyleSpan(android.graphics.Typeface.BOLD)
+            val spannableString = SpannableString.valueOf(addToEndText)
+            val relativeSizeSpan = RelativeSizeSpan(0.6f)
+            spannableString.setSpan(styleSpan, 0, addToEndText!!.length - 1, Spanned.SPAN_INCLUSIVE_EXCLUSIVE)
+            spannableString.setSpan(relativeSizeSpan, addToEndText!!.length- 1, addToEndText!!.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+            //val dynamicLayout = DynamicLayout(spannableString, paint, getWidth(), Layout.Alignment.ALIGN_NORMAL, 0f, 0f, false);
+            val buil = DynamicLayout.Builder.obtain(it,paint,it.length).build()
+            buil.draw(canvas)*/
+            //dynamicLayout.draw(canvas);
+
             stringBuffer?.let {
                 //如果追加过文本，需要将追加的文本去除
                 var temp = it.toString()
@@ -1071,6 +1115,7 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
         }
     }
 
+
     /**
      * 设置匹配字符
      */
@@ -1112,7 +1157,7 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
             maxLines = 1
         }
         val rowSpace = Math.abs(lineScale - 1.0f)*paint.measureText(portaitStr)*maxLines
-        val colSpace = Math.abs(wordScale - 1.0f)*paint.measureText(portaitStr)*(text.toString().length / maxLines + 0.99)
+        val colSpace = Math.abs(wordScale - 1.0f)*paint.measureText(portaitStr)*(text.toString().length / maxLines)
         var rowNum = 0
         if (text.toString().length % maxLines == 0){
             rowNum = text.toString().length / maxLines

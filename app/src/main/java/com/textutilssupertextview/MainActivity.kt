@@ -4,6 +4,7 @@ import android.graphics.Color
 import android.graphics.Typeface
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import com.textutils.textview.SuperTextClickListener
 import kotlinx.android.synthetic.main.activity_main.*
@@ -15,10 +16,24 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         testOne.text = "反对浪费吗方面的浪费饭店对面"
         testOne.setSpanScaleValue(6)
+            .setIsRefreshNow(false)
             .setSpanColorStr(Color.RED,"吗")
             .setSpanBackgroundColor(0,1)
             .setSpanLineStr()
             .setSpanScaleValueStr(8)
+            .refreshNow()
+
+        testTwo.setSpanClickStr("Hello")
+            .setOnStyleFontClickListener(object:SuperTextClickListener{
+                override fun onClick(startPosition: Int, endPosition: Int, text: String) {
+                    //Log.e("superText",text)
+                    Toast.makeText(baseContext,text,Toast.LENGTH_SHORT).show()
+                }
+            })
+            .setSpanColorStr(Color.RED)
+            .setSpanBoldStr()
+
+
 
 /*        testOne.text = "反倒可能发放到"
         testOne.setSpanSuperscript("放")
