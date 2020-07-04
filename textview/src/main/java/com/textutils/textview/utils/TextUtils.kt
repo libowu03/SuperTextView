@@ -5,8 +5,20 @@ import android.util.Log
 object TextUtils {
     private var matchStrArray: ArrayList<String> = ArrayList()
     private var tempText:String = ""
+    //上次调用匹配的原文本
+    private var oldText:String?=null
+    //上次匹配的文本
+    private var oldMathStr:String?=null
+    //上次匹配的类型
+    private var oldMathType = -1
 
     fun getMatchStrArray(matchStr:String?,matchEverySameStr:Boolean,tempText:String,text:String):ArrayList<String>{
+        if (oldText != null && oldText.equals(text) && matchStrArray.size != 0 && oldMathStr != null && oldMathStr.equals(matchStr) && oldMathType == MathType.MATH_WORD){
+            return matchStrArray
+        }
+        oldMathType = MathType.MATH_WORD
+        oldText = text
+        oldMathStr = matchStr
         matchStrArray.clear()
         getMatchStr(matchStr,matchEverySameStr,tempText,text)
         this.tempText = ""
@@ -37,7 +49,7 @@ object TextUtils {
                     matchStrArray.add("${startIndex},${endIndex}")
                     getMatchStr(matchStr, matchEverySameStr, this.tempText, text)
                 } else{
-                    Log.e("日志","未匹配到")
+                    //Log.e("日志","未匹配到")
                 }
             } else {
                 val startIndex = text.indexOf(it)
@@ -51,6 +63,12 @@ object TextUtils {
      * 获取网页链接的开始和借宿位置
      */
     fun getUrlArray(text:String) : ArrayList<String>{
+        if (oldText != null && oldText.equals(text) && matchStrArray.size != 0 && oldMathType == MathType.MATH_URL){
+            return matchStrArray
+        }
+        oldMathType = MathType.MATH_URL
+        oldText = text
+        Log.e("日志","执行匹配")
         matchStrArray.clear()
         runMatch(text)
         return matchStrArray
@@ -105,4 +123,10 @@ object TextUtils {
         }
     }
 
+    object MathType{
+        //匹配文字
+        const val MATH_WORD = 0
+        //匹配链接
+        const val MATH_URL = 1
+    }
 }

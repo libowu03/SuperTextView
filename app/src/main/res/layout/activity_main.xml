@@ -15,6 +15,7 @@
         android:lineSpacingMultiplier="1.2"
         android:maxLines="6"
         android:padding="10dp"
+        app:superTextFontFace="font.TTF"
         android:text="白日依山尽，黄河入海流。欲穷千里目，更上一层楼。"
         app:superTextEnablePortrait="true"
         app:superTextGravity="start" />
@@ -63,6 +64,7 @@
     <com.textutils.textview.view.SuperTextView
         android:id="@+id/testThree"
         android:layout_width="wrap_content"
+        app:superTextFontFace="/aa/cc/font.TTF"
         android:layout_height="wrap_content"
         android:text="Hello World!"
         app:layout_constraintBottom_toBottomOf="parent"

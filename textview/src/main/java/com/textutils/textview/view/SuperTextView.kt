@@ -14,6 +14,7 @@ import com.textutils.textview.R
 import com.textutils.textview.SuperTextClickListener
 import com.textutils.textview.utils.ModuleUtils
 import com.textutils.textview.utils.TextUtils
+import java.lang.Exception
 
 
 /**
@@ -80,6 +81,10 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
     var superStrokeWidth = 0f
     //描边的颜色
     var superStrokeColor = Color.TRANSPARENT
+    //字体路径，请保存到assets文件夹中
+    var superTextFontFace:String ?= ""
+    //打印日志的标识
+    var LOG = "superText"
 
     //保存匹配字符的位置信息集合
     private var matchStrArray: ArrayList<String> = ArrayList()
@@ -181,6 +186,7 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
         superBottomRightCorner = parameterType.getDimension(R.styleable.SuperTextView_superBottomRightCorner,0f)
         superCorner = parameterType.getDimension(R.styleable.SuperTextView_superCorner,0f)
         superSolidColor = parameterType.getColor(R.styleable.SuperTextView_superSolidColor,Color.TRANSPARENT)
+        superTextFontFace = parameterType.getString(R.styleable.SuperTextView_superTextFontFace)
         parameterType.recycle()
     }
 
@@ -213,7 +219,7 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
         superSolidColor = Color.TRANSPARENT
         stringBuffer?.clear()
         stringBuffer = SpannableStringBuilder(text.toString())
-
+        superTextFontFace = ""
     }
 
     /**
@@ -223,6 +229,9 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
         if (text.toString().isNullOrEmpty()){
             return
         }
+
+        setFontFace()
+
         //如果存在匹配的文案,先进行清除
         matchStrArray.clear()
         //大于文本长度时，设置为文本长度
@@ -242,6 +251,37 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
         stringBuffer = SpannableStringBuilder(text)
         matchStrArray.addAll(TextUtils.getMatchStrArray(matchStr,matchEverySameStr,text.toString(),text.toString()))
         setStyle()
+    }
+
+    /**
+     * 设置文字字体
+     */
+    fun setFontFace(fonTFace:String?=superTextFontFace){
+        this.superTextFontFace = fonTFace
+        //设置字体
+        if (!superTextFontFace.isNullOrEmpty()){
+            try{
+                if (superTextFontFace!!.startsWith("/")){
+                    superTextFontFace = superTextFontFace!!.replaceFirst("/","")
+                }
+                val end = if (superTextFontFace!!.lastIndexOf("/") == -1) 0 else superTextFontFace!!.lastIndexOf("/")
+                val start = if (superTextFontFace!!.lastIndexOf("/")+1 == 0) 0 else superTextFontFace!!.lastIndexOf("/")+1
+                val list = context.assets.list(superTextFontFace!!.substring(0,end))
+                val isExist = list?.contains(superTextFontFace!!.substring(start,superTextFontFace!!.length))
+                var font:Typeface
+                if (isExist!!){
+                    font = Typeface.createFromAsset(context.assets,superTextFontFace)
+                }else{
+                    font = Typeface.createFromFile(superTextFontFace)
+                }
+                if (font != null){
+                    typeface = font
+                }
+            }catch (e:Exception){
+                Log.e(LOG,String.format(context.resources.getString(R.string.readFontFaceFail),e.localizedMessage))
+            }
+        }
+        invalidate()
     }
 
     /**

@@ -16,6 +16,7 @@ class MainActivity : AppCompatActivity() {
         testOne.setSpanSuperscript("放")
             .setSpanColor("放",Color.RED)
             .setSpanScalePercent("放",0.5f)
+        testOne.setFontFace("font.TTF")
 
         testOne.setSpanColor(0,1,Color.RED)
         testTwo.setSpanColor("Hello",Color.RED)

@@ -56,7 +56,7 @@
         <!--是否启用textview的排版优化功能，主要用于优化默认textview因为中英文、数字混排时导致的换行异常问题，默认开启-->
       <!--  <attr name="superTextEnableSetType" format="boolean"/>-->
         <!--字符间距-->
-        <!--<attr name="wordSpacingMultiplier" format="float"/>-->
+        <attr name="wordSpacingMultiplier" format="float"/>
         <!--是否打开竖排文字的显示-->
         <attr name="superTextEnablePortrait" format="boolean"/>
         <!--这个属性针对的时竖排文字-->
@@ -88,6 +88,7 @@
         <attr name="superStrokeColor" format="color"/>
         <!--设置描边的粗细-->
         <attr name="superStrokeWidth" format="dimension"/>
-
+        <!--设置字体-->
+        <attr name="superTextFontFace" format="string"/>
     </declare-styleable>
 </resources>
