@@ -15,10 +15,10 @@
         android:lineSpacingMultiplier="1.2"
         android:maxLines="6"
         android:padding="10dp"
-        app:superTextFontFace="font.TTF"
+        app:stFontFace="font.TTF"
         android:text="白日依山尽，黄河入海流。欲穷千里目，更上一层楼。"
-        app:superTextEnablePortrait="true"
-        app:superTextGravity="start" />
+        app:stEnablePortrait="true"
+        app:stGravity="start" />
 
     <com.textutils.textview.view.SuperTextView
         android:id="@+id/testOne"
@@ -33,16 +33,18 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:superCorner="10dp"
-        app:superTextEndPosition="2"
-        app:superTextStartPosition="1"
-        app:superTextViewType="superscript" />
+        app:stCorner="10dp"
+        android:textStyle="italic"
+        app:stEndPosition="2"
+        app:stStartPosition="1"
+        app:stViewType="superscript" />
 
     <com.textutils.textview.view.SuperTextView
         android:id="@+id/testTwo"
         android:layout_width="match_parent"
         android:layout_height="30dp"
         android:layout_marginLeft="10dp"
+        app:stFontFace="font.TTF"
         android:layout_marginRight="10dp"
         android:gravity="center"
         android:paddingStart="10dp"
@@ -51,29 +53,29 @@
         android:textColor="#000000"
         android:textSize="12dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:superCorner="20dp"
-        app:superStrokeColor="@color/colorAccent"
-        app:superStrokeWidth="1dp"
+        app:stCorner="20dp"
+        app:stStrokeColor="@color/colorAccent"
+        app:stStrokeWidth="1dp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:superTextAddToEndText="点击了解更多"
-        app:superTextEndPosition="5"
-        app:superTextStartPosition="0"/>
+        app:stAddToEndText="点击了解更多"
+        app:stEndPosition="5"
+        app:stStartPosition="0"/>
 
     <com.textutils.textview.view.SuperTextView
         android:id="@+id/testThree"
         android:layout_width="wrap_content"
-        app:superTextFontFace="/aa/cc/font.TTF"
+        app:stFontFace="font.TTF"
         android:layout_height="wrap_content"
         android:text="Hello World!"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:superTextColor="@color/colorPrimary"
-        app:superTextEndPosition="5"
-        app:superTextStartPosition="0" />
+        app:stTextColor="@color/colorPrimary"
+        app:stEndPosition="5"
+        app:stStartPosition="0" />
 
     <com.textutils.textview.view.SuperTextView
         android:id="@+id/testFour"
@@ -84,9 +86,9 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:superTextColor="@color/colorPrimary"
-        app:superTextEndPosition="5"
-        app:superTextStartPosition="0" />
+        app:stTextColor="@color/colorPrimary"
+        app:stEndPosition="5"
+        app:stStartPosition="0" />
 
     <com.textutils.textview.view.SuperTextView
         android:id="@+id/testFive"
@@ -97,9 +99,9 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:superTextColor="@color/colorPrimary"
-        app:superTextEndPosition="5"
-        app:superTextStartPosition="0" />
+        app:stTextColor="@color/colorPrimary"
+        app:stEndPosition="5"
+        app:stStartPosition="0" />
 
     <com.textutils.textview.view.SuperTextView
         android:id="@+id/testSix"
@@ -110,9 +112,9 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:superTextColor="@color/colorPrimary"
-        app:superTextEndPosition="5"
-        app:superTextStartPosition="0" />
+        app:stTextColor="@color/colorPrimary"
+        app:stEndPosition="5"
+        app:stStartPosition="0" />
 
     <com.textutils.textview.view.SuperTextView
         android:id="@+id/testOneSeven"
@@ -123,9 +125,9 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:superTextColor="@color/colorPrimary"
-        app:superTextEndPosition="5"
-        app:superTextStartPosition="0" />
+        app:stTextColor="@color/colorPrimary"
+        app:stEndPosition="5"
+        app:stStartPosition="0" />
 
     <com.textutils.textview.view.SuperTextView
         android:id="@+id/testOneEight"
@@ -136,9 +138,10 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:superTextColor="@color/colorPrimary"
-        app:superTextEndPosition="5"
-        app:superTextStartPosition="0" />
+        app:stViewType="italic"
+        app:stTextColor="@color/colorPrimary"
+        app:stEndPosition="5"
+        app:stStartPosition="0" />
 
     <com.textutils.textview.view.SuperTextView
         android:id="@+id/testNice"
@@ -149,9 +152,9 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:superTextColor="@color/colorPrimary"
-        app:superTextEndPosition="5"
-        app:superTextStartPosition="0" />
+        app:stTextColor="@color/colorPrimary"
+        app:stEndPosition="5"
+        app:stStartPosition="0" />
 
     <com.textutils.textview.view.SuperTextView
         android:id="@+id/testTen"
@@ -162,9 +165,9 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:superTextColor="@color/colorPrimary"
-        app:superTextEndPosition="5"
-        app:superTextStartPosition="0" />
+        app:stTextColor="@color/colorPrimary"
+        app:stEndPosition="5"
+        app:stStartPosition="0" />
 
     <Button
         android:id="@+id/testOneBtn"

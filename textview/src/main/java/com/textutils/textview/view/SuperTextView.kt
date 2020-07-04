@@ -84,7 +84,7 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
     //字体路径，请保存到assets文件夹中
     var superTextFontFace:String ?= ""
     //打印日志的标识
-    var LOG = "superText"
+    val LOG = "superText"
 
     //保存匹配字符的位置信息集合
     private var matchStrArray: ArrayList<String> = ArrayList()
@@ -158,35 +158,38 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
     private fun getParameter(attr: AttributeSet?, def: Int) {
         val parameterType = context.theme.obtainStyledAttributes(attr,
             R.styleable.SuperTextView, def, 0)
-        superColor = parameterType.getColor(R.styleable.SuperTextView_superTextColor, -1)
-        matchStr = parameterType.getString(R.styleable.SuperTextView_superTextMatchStr)
-        matchEverySameStr = parameterType.getBoolean(R.styleable.SuperTextView_superTextMatchEverySameStr, false)
-        startPosition = parameterType.getInteger(R.styleable.SuperTextView_superTextStartPosition, 0)
-        endPosition = parameterType.getInteger(R.styleable.SuperTextView_superTextEndPosition, 0)
-        styleType = parameterType.getInt(R.styleable.SuperTextView_superTextViewType, 7)
-        superTextSize = parameterType.getDimensionPixelSize(R.styleable.SuperTextView_superTextSize, textSize.toInt())
-        superTextEnablePortrait = parameterType.getBoolean(R.styleable.SuperTextView_superTextEnablePortrait, false)
+        superColor = parameterType.getColor(R.styleable.SuperTextView_stTextColor, textColors.defaultColor)
+        matchStr = parameterType.getString(R.styleable.SuperTextView_stMatchStr)
+        if (matchStr == null){
+            matchStr = ""
+        }
+        matchEverySameStr = parameterType.getBoolean(R.styleable.SuperTextView_stMatchEverySameStr, false)
+        startPosition = parameterType.getInteger(R.styleable.SuperTextView_stStartPosition, 0)
+        endPosition = parameterType.getInteger(R.styleable.SuperTextView_stEndPosition, 0)
+        styleType = parameterType.getInt(R.styleable.SuperTextView_stViewType, 7)
+        superTextSize = parameterType.getDimensionPixelSize(R.styleable.SuperTextView_stTextSize, textSize.toInt())
+        superTextEnablePortrait = parameterType.getBoolean(R.styleable.SuperTextView_stEnablePortrait, false)
         superTextSize = ModuleUtils.px2dip(
             context,
             superTextSize.toFloat()
         )
-        superTextScalePrecent = parameterType.getFloat(R.styleable.SuperTextView_superTextScale, 1.0f)
-        superTextBackgroundColor = parameterType.getColor(R.styleable.SuperTextView_superBackgroundColor, Color.parseColor("#74E1FF"))
-        enableClickUnderLine = parameterType.getBoolean(R.styleable.SuperTextView_superTextEnableClickUnderline, true)
-        superStrokeColor = parameterType.getColor(R.styleable.SuperTextView_superStrokeColor,Color.TRANSPARENT)
-        superStrokeWidth = parameterType.getDimension(R.styleable.SuperTextView_superStrokeWidth,0f)
+        superTextScalePrecent = parameterType.getFloat(R.styleable.SuperTextView_stScale, 1.0f)
+        superTextBackgroundColor = parameterType.getColor(R.styleable.SuperTextView_stBackgroundColor, Color.parseColor("#74E1FF"))
+        enableClickUnderLine = parameterType.getBoolean(R.styleable.SuperTextView_stEnableClickUnderline, true)
+        superStrokeColor = parameterType.getColor(R.styleable.SuperTextView_stStrokeColor,Color.TRANSPARENT)
+        superStrokeWidth = parameterType.getDimension(R.styleable.SuperTextView_stStrokeWidth,0f)
 
         //enableVerticalType = parameterType.getBoolean(R.styleable.SuperTextView_superTextEnableSetType, true)
         //wordSpacingMultiplier = parameterType.getFloat(R.styleable.SuperTextView_wordSpacingMultiplier, 1.0f)
-        superTextGravity = parameterType.getInt(R.styleable.SuperTextView_superTextGravity, 1)
-        addToEndText = parameterType.getString(R.styleable.SuperTextView_superTextAddToEndText)
-        superTopLeftCorner = parameterType.getDimension(R.styleable.SuperTextView_superTopLeftCorner,0f)
-        superTopRightCorner = parameterType.getDimension(R.styleable.SuperTextView_superTopRightCorner,0f)
-        superBottomLeftCorner = parameterType.getDimension(R.styleable.SuperTextView_superBottomLeftCorner,0f)
-        superBottomRightCorner = parameterType.getDimension(R.styleable.SuperTextView_superBottomRightCorner,0f)
-        superCorner = parameterType.getDimension(R.styleable.SuperTextView_superCorner,0f)
-        superSolidColor = parameterType.getColor(R.styleable.SuperTextView_superSolidColor,Color.TRANSPARENT)
-        superTextFontFace = parameterType.getString(R.styleable.SuperTextView_superTextFontFace)
+        superTextGravity = parameterType.getInt(R.styleable.SuperTextView_stGravity, 1)
+        addToEndText = parameterType.getString(R.styleable.SuperTextView_stAddToEndText)
+        superTopLeftCorner = parameterType.getDimension(R.styleable.SuperTextView_stTopLeftCorner,0f)
+        superTopRightCorner = parameterType.getDimension(R.styleable.SuperTextView_stTopRightCorner,0f)
+        superBottomLeftCorner = parameterType.getDimension(R.styleable.SuperTextView_stBottomLeftCorner,0f)
+        superBottomRightCorner = parameterType.getDimension(R.styleable.SuperTextView_stBottomRightCorner,0f)
+        superCorner = parameterType.getDimension(R.styleable.SuperTextView_stCorner,0f)
+        superSolidColor = parameterType.getColor(R.styleable.SuperTextView_stSolidColor,Color.TRANSPARENT)
+        superTextFontFace = parameterType.getString(R.styleable.SuperTextView_stFontFace)
         parameterType.recycle()
     }
 
@@ -255,9 +258,10 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
 
     /**
      * 设置文字字体
+     * @param fontFace 字体存放路径，可以是assets路径，也可以是手机文件里面的路径
      */
-    fun setFontFace(fonTFace:String?=superTextFontFace){
-        this.superTextFontFace = fonTFace
+    fun setFontFace(fontFace:String?=superTextFontFace):SuperTextView{
+        this.superTextFontFace = fontFace
         //设置字体
         if (!superTextFontFace.isNullOrEmpty()){
             try{
@@ -282,6 +286,7 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
             }
         }
         invalidate()
+        return this
     }
 
     /**
@@ -291,33 +296,43 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
         when (styleType) {
             SuperTextConfig.Style.LINE -> {
                 setSpanLine()
+                setSpanColor()
+
             }
             SuperTextConfig.Style.UNDER_LINE -> {
                 setSpanUnderline()
+                setSpanColor()
             }
             SuperTextConfig.Style.BOLD -> {
                 setSpanBold()
+                setSpanColor()
             }
             SuperTextConfig.Style.ITALIC -> {
                 setSpanItalic()
+                setSpanColor()
             }
             SuperTextConfig.Style.SCALE_PERCENT -> {
                 setSpanScalePercent()
+                setSpanColor()
             }
             SuperTextConfig.Style.SCALE_VALUE -> {
                 setSpanScaleValue()
+                setSpanColor()
             }
             SuperTextConfig.Style.BACKGROUND_COLOR -> {
                 setSpanBackgroundColor()
+                setSpanColor()
             }
             SuperTextConfig.Style.COLOR -> {
                 setSpanColor()
             }
             SuperTextConfig.Style.SUBSCRIPT -> {
                 setSpanSubscript()
+                setSpanColor()
             }
             SuperTextConfig.Style.SUPERSCRIPT -> {
                 setSpanSuperscript()
+                setSpanColor()
             }
         }
     }
@@ -375,7 +390,7 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
      * @param matchAll 是否在文中匹配所有该字符
      * @param indexArray 需要匹配的index，比如如果只需要第二被改变样式，则此indexArray中应该放入2
      */
-    fun setSpanLine(matchStr:String,matchAll:Boolean = false,indexArray:Array<Int> ?= null):SuperTextView{
+    fun setSpanLineStr(matchStr:String=this.matchStr!!,matchAll:Boolean = false,indexArray:Array<Int> ?= null):SuperTextView{
         setMatchStrStyle(matchStr,matchAll,indexArray,
             SuperTextConfig.Style.LINE,0,0,0,0f,0)
         return this
@@ -391,12 +406,12 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
     }
 
     /**
-     * 设置删除线，设置依据为字符的匹配
+     * 设置删下划线
      * @param matchStr 需要匹配的字符
      * @param matchAll 是否在文中匹配所有该字符
      * @param indexArray 需要匹配的index，比如如果只需要第二被改变样式，则此indexArray中应该放入2
      */
-    fun setSpanUnderline(matchStr:String,matchAll:Boolean = false,indexArray:Array<Int> ?= null):SuperTextView{
+    fun setSpanUnderlineStr(matchStr:String=this.matchStr!!,matchAll:Boolean = false,indexArray:Array<Int> ?= null):SuperTextView{
         setMatchStrStyle(matchStr,matchAll,indexArray,
             SuperTextConfig.Style.UNDER_LINE,0,0,0,0f,0)
         return this
@@ -419,7 +434,7 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
      * @param matchAll 是否在文中匹配所有该字符
      * @param indexArray 需要匹配的index，比如如果只需要第二被改变样式，则此indexArray中应该放入2
      */
-    fun setSpanBold(matchStr:String,matchAll:Boolean = false,indexArray:Array<Int> ?= null):SuperTextView{
+    fun setSpanBoldStr(matchStr:String=this.matchStr!!,matchAll:Boolean = false,indexArray:Array<Int> ?= null):SuperTextView{
         setMatchStrStyle(matchStr,matchAll,indexArray,
             SuperTextConfig.Style.BOLD,0,0,0,0f,0)
         return this
@@ -440,7 +455,7 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
      * @param matchAll 是否在文中匹配所有该字符
      * @param indexArray 需要匹配的index，比如如果只需要第二被改变样式，则此indexArray中应该放入2
      */
-    fun setSpanItalic(matchStr:String,matchAll:Boolean = false,indexArray:Array<Int> ?= null):SuperTextView{
+    fun setSpanItalicStr(matchStr:String=this.matchStr!!,matchAll:Boolean = false,indexArray:Array<Int> ?= null):SuperTextView{
         setMatchStrStyle(matchStr,matchAll,indexArray,
             SuperTextConfig.Style.ITALIC,0,0,0,0f,0)
         return this
@@ -452,14 +467,14 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
      * @param matchAll 是否在文中匹配所有该字符
      * @param indexArray 需要匹配的index，比如如果只需要第二被改变样式，则此indexArray中应该放入2
      */
-    fun setSpanSubscript(matchStr:String,matchAll:Boolean = false,indexArray:Array<Int> ?= null):SuperTextView{
+    fun setSpanSubscriptStr(matchStr:String=this.matchStr!!,matchAll:Boolean = false,indexArray:Array<Int> ?= null):SuperTextView{
         setMatchStrStyle(matchStr,matchAll,indexArray,
             SuperTextConfig.Style.SUBSCRIPT,0,0,0,0f,0)
         return this
     }
 
     /**
-     * 设置斜体
+     * 设置角标上
      */
     fun setSpanSubscript(startPosition:Int = this.startPosition,endPosition:Int = this.endPosition) :SuperTextView{
         setPositionStyle(startPosition,endPosition,
@@ -468,19 +483,19 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
     }
 
     /**
-     * 设置删除线，设置依据为字符的匹配
+     * 设置角标上
      * @param matchStr 需要匹配的字符
      * @param matchAll 是否在文中匹配所有该字符
      * @param indexArray 需要匹配的index，比如如果只需要第二被改变样式，则此indexArray中应该放入2
      */
-    fun setSpanSuperscript(matchStr:String,matchAll:Boolean = false,indexArray:Array<Int> ?= null):SuperTextView{
+    fun setSpanSuperscriptStr(matchStr:String=this.matchStr!!,matchAll:Boolean = false,indexArray:Array<Int> ?= null):SuperTextView{
         setMatchStrStyle(matchStr,matchAll,indexArray,
             SuperTextConfig.Style.SUPERSCRIPT,0,0,0,0f,0)
         return this
     }
 
     /**
-     * 设置斜体
+     * 设置角标下
      */
     fun setSpanSuperscript(startPosition:Int = this.startPosition,endPosition:Int = this.endPosition) :SuperTextView{
         setPositionStyle(startPosition,endPosition,
@@ -492,40 +507,40 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
     /**
      * 设置缩放比例
      */
-    fun setSpanScalePercent(startPosition:Int = this.startPosition,endPosition:Int = this.endPosition,scalePercent:Float = superTextScalePrecent) :SuperTextView{
+    fun setSpanScalePercent(scalePercent:Float = superTextScalePrecent,startPosition:Int = this.startPosition,endPosition:Int = this.endPosition) :SuperTextView{
         setPositionStyle(startPosition,endPosition,
             SuperTextConfig.Style.SCALE_PERCENT,false,0,0,0,scalePercent,0)
         return this
     }
 
     /**
-     * 设置删除线，设置依据为字符的匹配
+     * 设置缩放比例
      * @param matchStr 需要匹配的字符
      * @param matchAll 是否在文中匹配所有该字符
      * @param indexArray 需要匹配的index，比如如果只需要第二被改变样式，则此indexArray中应该放入2
      */
-    fun setSpanScalePercent(matchStr:String,scalePercent: Float = this.superTextScalePrecent,matchAll:Boolean = false,indexArray:Array<Int> ?= null):SuperTextView{
+    fun setSpanScalePercentStr(scalePercent: Float = this.superTextScalePrecent,matchStr:String=this.matchStr!!,matchAll:Boolean = false,indexArray:Array<Int> ?= null):SuperTextView{
         setMatchStrStyle(matchStr,matchAll,indexArray,
             SuperTextConfig.Style.SCALE_PERCENT,0,0,0,scalePercent,0)
         return this
     }
 
     /**
-     * 设置缩放大小
+     * 设置缩放具体字体大小
      */
-    fun setSpanScaleValue(startPosition:Int = this.startPosition,endPosition:Int = this.endPosition,superTextSize:Int = this.superTextSize) :SuperTextView{
+    fun setSpanScaleValue(superTextSize:Int = this.superTextSize,startPosition:Int = this.startPosition,endPosition:Int = this.endPosition) :SuperTextView{
         setPositionStyle(startPosition,endPosition,
             SuperTextConfig.Style.SCALE_VALUE,false,0,0,0,0f,superTextSize)
         return this
     }
 
     /**
-     * 设置删除线，设置依据为字符的匹配
+     * 设置缩放具体字体大小
      * @param matchStr 需要匹配的字符
      * @param matchAll 是否在文中匹配所有该字符
      * @param indexArray 需要匹配的index，比如如果只需要第二被改变样式，则此indexArray中应该放入2
      */
-    fun setSpanScaleValue(matchStr:String,scaleValue: Int = this.superTextSize,matchAll:Boolean = false,indexArray:Array<Int> ?= null):SuperTextView{
+    fun setSpanScaleValueStr(scaleValue: Int = this.superTextSize,matchStr:String=this.matchStr!!,matchAll:Boolean = false,indexArray:Array<Int> ?= null):SuperTextView{
         setMatchStrStyle(matchStr,matchAll,indexArray,
             SuperTextConfig.Style.SCALE_VALUE,0,0,0,0f,scaleValue)
         return this
@@ -542,12 +557,12 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
     }
 
     /**
-     * 设置删除线，设置依据为字符的匹配
+     * 设置特殊样式背景色
      * @param matchStr 需要匹配的字符
      * @param matchAll 是否在文中匹配所有该字符
      * @param indexArray 需要匹配的index，比如如果只需要第二被改变样式，则此indexArray中应该放入2
      */
-    fun setSpanBackgroundColor(matchStr:String,backgroundColor: Int = this.superTextBackgroundColor,matchAll:Boolean = false,indexArray:Array<Int> ?= null):SuperTextView{
+    fun setSpanBackgroundColorStr(backgroundColor: Int = this.superTextBackgroundColor,matchStr:String=this.matchStr!!,matchAll:Boolean = false,indexArray:Array<Int> ?= null):SuperTextView{
         setMatchStrStyle(matchStr,matchAll,indexArray,
             SuperTextConfig.Style.BACKGROUND_COLOR,0,backgroundColor,0,0f,0)
         return this
@@ -563,12 +578,12 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
     }
 
     /**
-     * 设置删除线，设置依据为字符的匹配
+     * 设置特殊样式字体颜色
      * @param matchStr 需要匹配的字符
      * @param matchAll 是否在文中匹配所有该字符
      * @param indexArray 需要匹配的index，比如如果只需要第二被改变样式，则此indexArray中应该放入2
      */
-    fun setSpanColor(matchStr:String,textColor: Int = this.superColor,matchAll:Boolean = false,indexArray:Array<Int> ?= null):SuperTextView{
+    fun setSpanColorStr(textColor: Int = this.superColor,matchStr:String=this.matchStr!!,matchAll:Boolean = false,indexArray:Array<Int> ?= null):SuperTextView{
         setMatchStrStyle(matchStr,matchAll,indexArray,
             SuperTextConfig.Style.COLOR,textColor,0,0,0f,0)
         return this
@@ -584,12 +599,12 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
     }
 
     /**
-     * 设置删除线，设置依据为字符的匹配
+     * 设置特殊样式字体点击
      * @param matchStr 需要匹配的字符
      * @param matchAll 是否在文中匹配所有该字符
      * @param indexArray 需要匹配的index，比如如果只需要第二被改变样式，则此indexArray中应该放入2
      */
-    fun setSpanClick(matchStr:String,enableUnderLine: Boolean = this.enableClickUnderLine,matchAll:Boolean = false,indexArray:Array<Int> ?= null):SuperTextView{
+    fun setSpanClickStr(matchStr:String=this.matchStr!!,enableUnderLine: Boolean = this.enableClickUnderLine,matchAll:Boolean = false,indexArray:Array<Int> ?= null):SuperTextView{
         setMatchStrStyle(matchStr,matchAll,indexArray,
             SuperTextConfig.Style.CLICK,0,0,0,0f,0,enableUnderLine)
         return this
@@ -679,7 +694,7 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
         return this
     }
 
-    fun setSpanImage(matchStr: String,img: Int,matchAll: Boolean=false,isCenter:Boolean = true,indexArray: Array<Int>?=null) {
+    fun setSpanImageStr(img: Int,matchStr: String=this.matchStr!!,matchAll: Boolean=false,isCenter:Boolean = true,indexArray: Array<Int>?=null) {
         setMatchStrStyle(matchStr,matchAll,indexArray,SuperTextConfig.Style.IMG,0,0,img,0f,0,false,isCenter)
     }
 
@@ -718,10 +733,11 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
     private fun setMatchStrStyle(matchStr:String,matchAll:Boolean,indexArray:Array<Int>?,type:Int,superTextColor:Int = 0,backgroundColor:Int=0,img:Int=0,scalePercent: Float = this.superTextScalePrecent,scaleValue:Int=this.superTextSize,enableUnderLine: Boolean = this.enableClickUnderLine,isCenter: Boolean = false){
         val isReset = compareText()
         matchEverySameStr = matchAll
+        this.matchStr = matchStr
+
         if (matchAll){
             //如果匹配所有字符，则清除之前的数据，通过递归重新获取
             if (!matchStr.equals(this.matchStr) || isReset){
-                this.matchStr = matchStr
                 this.matchStrArray.clear()
                 matchStrArray.addAll(TextUtils.getMatchStrArray(matchStr,matchAll,text.toString(),text.toString()))
             }
@@ -936,27 +952,27 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
             initData()
             return
         }
+
+        //绘制填充的背景色
+        val path = Path()
+        path.addRoundRect(RectF(0f+strokePaint.strokeWidth/2,0f+strokePaint.strokeWidth/2,width.toFloat()-strokePaint.strokeWidth/2,height.toFloat()-strokePaint.strokeWidth/2),roundValue.toFloatArray(),Path.Direction.CW)
+        canvas?.drawPath(path,backgroundSrcPaint)
+
+        if (strokePaint.strokeWidth >= height/2){
+            strokePaint.strokeWidth = (height/2.0f)
+        }
+        //绘制描边颜色
+        val pathStroke = Path()
+        pathStroke.addRoundRect(RectF(0f+strokePaint.strokeWidth/2,0f+strokePaint.strokeWidth/2,width.toFloat()-strokePaint.strokeWidth/2,height.toFloat()-strokePaint.strokeWidth/2),roundValue.toFloatArray(),Path.Direction.CW)
+        canvas?.drawPath(pathStroke,strokePaint)
+
         if (superTextEnablePortrait) {
             //竖排文字
             drawPortraintText(canvas)
         } else {
-            //绘制填充的背景色
-            val path = Path()
-            path.addRoundRect(RectF(0f+strokePaint.strokeWidth/2,0f+strokePaint.strokeWidth/2,width.toFloat()-strokePaint.strokeWidth/2,height.toFloat()-strokePaint.strokeWidth/2),roundValue.toFloatArray(),Path.Direction.CW)
-            canvas?.drawPath(path,backgroundSrcPaint)
-
-            if (strokePaint.strokeWidth >= height/2){
-                strokePaint.strokeWidth = (height/2.0f)
-            }
-            //绘制描边颜色
-            val pathStroke = Path()
-            pathStroke.addRoundRect(RectF(0f+strokePaint.strokeWidth/2,0f+strokePaint.strokeWidth/2,width.toFloat()-strokePaint.strokeWidth/2,height.toFloat()-strokePaint.strokeWidth/2),roundValue.toFloatArray(),Path.Direction.CW)
-            canvas?.drawPath(pathStroke,strokePaint)
-
             //普通排版
             drawAddTo(canvas)
             super.onDraw(canvas)
-
         }
     }
 
@@ -1055,6 +1071,13 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
         }
     }
 
+    /**
+     * 设置匹配字符
+     */
+    fun setMathStr(matchStr:String):SuperTextView{
+        this.matchStr = matchStr
+        return this
+    }
 
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
