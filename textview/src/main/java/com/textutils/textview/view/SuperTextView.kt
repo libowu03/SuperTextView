@@ -9,9 +9,12 @@ import android.text.style.*
 import android.util.AttributeSet
 import android.util.Log
 import android.view.Gravity
+import android.view.MotionEvent
 import android.view.View
+import android.view.ViewGroup
 import androidx.core.text.toSpanned
 import com.textutils.textview.R
+import com.textutils.textview.SuperTextAddTextClickListener
 import com.textutils.textview.SuperTextClickListener
 import com.textutils.textview.utils.ModuleUtils
 import com.textutils.textview.utils.TextUtils
@@ -22,15 +25,17 @@ import com.textutils.textview.utils.TextUtils
  * @author libowu
  */
 class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
-    private var stringBuffer: SpannableStringBuilder? = null
     //追加文本的特殊样式
-    private var addTextStringBuffer:SpannableStringBuilder?=null
+    private var spannableString: SpannableStringBuilder?=null
+    private var stringBuffer: SpannableStringBuilder? = null
     //临时保存文字大小
     private var tempTextSize = 0f
     //保存竖排文字时需要使用的特殊样式
     private var portraitStyleMap: HashMap<String, Int>? = null
     //点击监听
     private var clickCallback:SuperTextClickListener?=null
+    //追加文本的监听器
+    private var addTextClickListener:SuperTextAddTextClickListener?=null
     //这个变量是测量文字大小时使用的标准文字，即无论汉字、字母、数字或符号，最终测量出来的字体大小是已这个字符为标准的。这样的目的是避免文字在排版时出现混乱的情况
     private var portaitStr = "你"
     //是否支持竖排文字显示
@@ -66,7 +71,7 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
     //竖排文字绘制起始地点,有start和end两种,start表示从左边开始蕙芷,end则表示从右边开始绘制
     var superTextGravity:Int = 1
     //追加文本,即在行位添加需要追加的文案
-    var addToEndText:String?=null
+    var addToEndText:String?=""
     //左上角圆角
     var superTopLeftCorner:Float = 0f
     //左下角圆角
@@ -97,6 +102,8 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
     private var strokePaint:Paint = Paint()
     //textview的行数
     var superTextLineCount:Int = 0
+    //文本追加区域的绘制矩阵,由于未知原因，在span中设置点击无效，只能通过点击是否在矩阵中进行判定了
+    var addTextRect:RectF?= null
 
     private var roundValue = Array<Float>(8,{0f})
 
@@ -117,8 +124,9 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
         tempTextSize = textSize
         portraitStyleMap = HashMap()
         getParameter(attr, def)
-        initData()
+        initAddText()
         initCornr()
+        initData()
         //设置绘制背景的画板
         backgroundSrcPaint.color = superSolidColor
         backgroundSrcPaint.isAntiAlias = true
@@ -127,6 +135,15 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
         strokePaint.style = Paint.Style.STROKE
         strokePaint.strokeWidth = superStrokeWidth
         strokePaint.isAntiAlias = true
+    }
+
+    /**
+     * 初始化文本追加
+     */
+    private fun initAddText() {
+        addToEndText?.let {
+            spannableString = SpannableStringBuilder(it)
+        }
     }
 
     /**
@@ -295,6 +312,23 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
         invalidate()
         return this
     }
+
+    override fun onTouchEvent(event: MotionEvent?): Boolean {
+        when(event?.action){
+            MotionEvent.ACTION_UP -> {
+                addTextRect?.let {
+                    if (it.contains(event.x,event.y)){
+                        addTextClickListener?.onAddTextClick(addToEndText)
+                        return true
+                    }/*else{
+
+                    }*/
+                }
+            }
+        }
+        return  super.onTouchEvent(event)
+    }
+
 
     /**
      * 通过xml属性设置不同的样式
@@ -861,7 +895,19 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
      * @param scaleValue 字体缩放的具体大小
      * @param refreshNow 是否马上刷新,当出现for循环时,此属性会改为false,避免textview多次重复绘制浪费不必要的资源
      */
-    private fun setSuperStyle(startPosition:Int = this.startPosition,endPosition:Int = this.endPosition,type:Int,includeClick:Boolean,superTextColor:Int = 0,backgroundColor:Int=this.superTextBackgroundColor,img:Int=0,scalePercent: Float = this.superTextScalePrecent,scaleValue:Int=this.superTextSize,refreshNow:Boolean = true,enableUnderLine: Boolean = this.enableClickUnderLine,isCenter: Boolean = false){
+    private fun setSuperStyle(startPosition:Int = this.startPosition,
+                              endPosition:Int = this.endPosition,
+                              type:Int,
+                              includeClick:Boolean,
+                              superTextColor:Int = 0,
+                              backgroundColor:Int=this.superTextBackgroundColor,
+                              img:Int=0,
+                              scalePercent: Float = this.superTextScalePrecent,
+                              scaleValue:Int=this.superTextSize,
+                              refreshNow:Boolean = true,
+                              enableUnderLine: Boolean = this.enableClickUnderLine,
+                              isCenter: Boolean = false,
+                              stringBuffer:SpannableStringBuilder?= this.stringBuffer){
         when (type) {
             SuperTextConfig.Style.LINE -> {
                 val lineStype = StrikethroughSpan()
@@ -934,7 +980,6 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
             SuperTextConfig.Style.CLICK -> {
                 val clickSpan = object : ClickableSpan() {
                     override fun onClick(widget: View) {
-                        Log.e("日志","点击监听器是否为空:${clickCallback == null}")
                         clickCallback?.onClick(startPosition, endPosition, text.substring(startPosition, endPosition))
                     }
 
@@ -944,7 +989,7 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
                     }
                 }
                 stringBuffer?.setSpan(clickSpan, startPosition, endPosition, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-                movementMethod = LinkMovementMethod.getInstance();
+                movementMethod = /*LinkMovementMethod.getInstance();*/SuperTextMovementMethod
                 if (refreshNow){
                     text = stringBuffer
                 }
@@ -1015,6 +1060,9 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
      * @return 是否设置"..."，当文本为空时也会返回true
      */
     private fun checkLastLineWidth():Boolean {
+        if (addToEndText == null){
+            return false
+        }
         //如果文本为空，没必要测量，onDraw方法也没必要执行了。直接返回true结束onDraw方法
         if (stringBuffer.isNullOrEmpty()){
             return true
@@ -1105,8 +1153,17 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
                 //绘制文本
                 canvas.drawText(item.value.toString(), x,y,paint)
             }
+
         }
 
+    }
+
+    /**
+     * 设设置文本追加的点击事件
+     */
+    fun setAddTextClickListener(addTextClickListener:SuperTextAddTextClickListener):SuperTextView{
+        this.addTextClickListener = addTextClickListener
+        return this
     }
 
 
@@ -1118,26 +1175,26 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
         if (gravity == Gravity.CENTER || gravity == Gravity.CENTER_HORIZONTAL){
             return
         }
-        addToEndText?.let {
+        if (addToEndText == null){
+            return
+        }
+        if (!spannableString.isNullOrEmpty()){
             canvas?.save()
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                val spannableString = SpannableString.valueOf(addToEndText)
-                //val relativeSizeSpan = RelativeSizeSpan(0.6f)
-                val styleSpan = StyleSpan(android.graphics.Typeface.BOLD)
-                spannableString.setSpan(styleSpan, 0, addToEndText!!.length - 1, Spanned.SPAN_INCLUSIVE_EXCLUSIVE)
-                //spannableString.setSpan(relativeSizeSpan, addToEndText!!.length- 1, addToEndText!!.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-                val staticLaout = StaticLayout.Builder.obtain(spannableString,0,spannableString.length,paint,paint.measureText(addToEndText).toInt())
+                val staticLaout = StaticLayout.Builder.obtain(spannableString!!,0,spannableString!!.length,paint,paint.measureText(addToEndText).toInt())
+                //DynamicLayout.Builder.obtain(spannableString!!,paint,spannableString!!.length).build().draw(canvas)
+                addTextRect = RectF(width - paint.measureText(addToEndText) - paddingRight, layout.height- (-paint.ascent() + paint.descent())/2, width.toFloat()-paddingRight, layout.height.toFloat()+ (-paint.ascent() + paint.descent())/2)
+                //canvas?.drawRect(addTextRect!!,paint)
                 canvas?.translate(width - paint.measureText(addToEndText) - paddingRight,layout.height- (-paint.ascent() + paint.descent())/2)
-                staticLaout.setAlignment(Layout.Alignment.ALIGN_NORMAL)
                 staticLaout.build().draw(canvas)
             } else {
                 val staticLaout = StaticLayout(addToEndText, paint, paint.measureText(addToEndText).toInt(), Layout.Alignment.ALIGN_NORMAL, lineSpacingMultiplier, lineSpacingExtra, includeFontPadding)
                 canvas?.translate(width - paint.measureText(addToEndText) - paddingRight,height/2 - (-paint.ascent() + paint.descent())/2)
                 staticLaout.draw(canvas)
             }
-
             canvas?.restore()
         }
+
     }
 
 

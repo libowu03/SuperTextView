@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
+import com.textutils.textview.SuperTextAddTextClickListener
 import com.textutils.textview.SuperTextClickListener
 import kotlinx.android.synthetic.main.activity_main.*
 
@@ -26,12 +27,20 @@ class MainActivity : AppCompatActivity() {
         testTwo.setSpanClickStr("Hello")
             .setOnStyleFontClickListener(object:SuperTextClickListener{
                 override fun onClick(startPosition: Int, endPosition: Int, text: String) {
-                    //Log.e("superText",text)
                     Toast.makeText(baseContext,text,Toast.LENGTH_SHORT).show()
                 }
             })
             .setSpanColorStr(Color.RED)
             .setSpanBoldStr()
+            .setAddTextClickListener(object:SuperTextAddTextClickListener{
+                override fun onAddTextClick(text: String?) {
+                    Toast.makeText(baseContext,text,Toast.LENGTH_SHORT).show()
+                }
+
+            })
+        testTwo.setOnClickListener {
+            Toast.makeText(baseContext,"你好",Toast.LENGTH_SHORT).show()
+        }
 
 
 
