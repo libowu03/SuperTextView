@@ -10,6 +10,8 @@ import android.util.AttributeSet
 import android.util.Log
 import android.view.Gravity
 import android.view.View
+import androidx.core.text.toSpannable
+import androidx.core.text.toSpanned
 import com.textutils.textview.R
 import com.textutils.textview.SuperTextClickListener
 import com.textutils.textview.utils.ModuleUtils
@@ -995,11 +997,43 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
             //竖排文字
             drawPortraintText(canvas)
         } else {
+            //存在文本追加时，如果文本到达或超出追加文本的显示区域，超出部分被截断并用“...”.如果存在需要截断的内容，则结束此次绘制，进入下一次绘制
+            if(checkLastLineWidth()){
+                return
+            }
             //普通排版
             super.onDraw(canvas)
             superTextLineCount = lineCount
             drawAddTo(canvas)
         }
+    }
+
+    private fun checkLastLineWidth():Boolean {
+        if (!addToEndText.isNullOrEmpty()){
+            var temp = stringBuffer.toString()
+            var tempWidth = 0f
+            for (item in 0..temp.length-1){
+                if (tempWidth > (width) - paddingLeft - paddingRight){
+                    tempWidth = width - tempWidth
+                }
+                tempWidth += paint.measureText("${temp[item]}")
+            }
+            val test = addToEndText
+            var tempTestLenght =paint.measureText(test)
+            //如果最终的剩余宽度足够添加末尾文字，则添加末尾文字
+            if (tempWidth + tempTestLenght < width-paddingLeft-paddingRight){
+                return false
+            }else if ( tempWidth + tempTestLenght == width.toFloat()-paddingLeft-paddingRight ){
+                return false
+            }else{
+                //原本的字符长度太长，无法进行插入，则直接开启下一行进行插入
+                stringBuffer = SpannableStringBuilder(stringBuffer!!.subSequence(0,temp.length-addToEndText!!.length))
+                stringBuffer?.append("...")
+                text = stringBuffer
+                return true
+            }
+        }
+        return false
     }
 
     /**

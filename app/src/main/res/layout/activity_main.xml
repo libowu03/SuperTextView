@@ -59,7 +59,7 @@
         android:layout_marginRight="10dp"
         android:paddingStart="10dp"
         android:paddingEnd="10dp"
-        android:text="Hello World!饭店开房你反馈的烦恼能否看到你发"
+        android:text="Hello World!饭店开房你反馈的烦恼能否看到你发疯狂的那份反倒可能发的放得开了烦恼方法没打开了烦恼方面的浪费广告"
         android:textColor="#000000"
         android:textSize="12dp"
         app:layout_constraintBottom_toBottomOf="parent"
