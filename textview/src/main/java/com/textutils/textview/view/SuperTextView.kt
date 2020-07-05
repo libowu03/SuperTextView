@@ -10,7 +10,6 @@ import android.util.AttributeSet
 import android.util.Log
 import android.view.Gravity
 import android.view.View
-import androidx.core.text.toSpannable
 import androidx.core.text.toSpanned
 import com.textutils.textview.R
 import com.textutils.textview.SuperTextClickListener
@@ -24,6 +23,8 @@ import com.textutils.textview.utils.TextUtils
  */
 class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
     private var stringBuffer: SpannableStringBuilder? = null
+    //追加文本的特殊样式
+    private var addTextStringBuffer:SpannableStringBuilder?=null
     //临时保存文字大小
     private var tempTextSize = 0f
     //保存竖排文字时需要使用的特殊样式
@@ -96,6 +97,7 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
     private var strokePaint:Paint = Paint()
     //textview的行数
     var superTextLineCount:Int = 0
+
     private var roundValue = Array<Float>(8,{0f})
 
 
@@ -804,7 +806,6 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
         val isReset = compareText()
         //避免设置时每次都需要生成一遍数据,如果存在可用数据,就使用可用数据
         if (isReset || matchStrArray.size == 0){
-            Log.e("日志","我被执行了")
             matchStrArray = TextUtils.getUrlArray(text.toString())
         }
         var tempIndex = 0
@@ -1008,18 +1009,40 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
         }
     }
 
+    /**
+     * 这里对追加文本做一些判断，如果原文本最后一行剩余空白空间不足以显示追加文本，则原文本做出让步，原文不末尾部分数据变成。"..."的形式
+     * 如果需要保持原始文本的完整度，请不要使用追加文本，或者在设置追加文本前明确原始文本的追后一行空间可以容纳的下追加文本的长度
+     * @return 是否设置"..."，当文本为空时也会返回true
+     */
     private fun checkLastLineWidth():Boolean {
+        //如果文本为空，没必要测量，onDraw方法也没必要执行了。直接返回true结束onDraw方法
+        if (stringBuffer.isNullOrEmpty()){
+            return true
+        }
         if (!addToEndText.isNullOrEmpty()){
-            var temp = stringBuffer.toString()
             var tempWidth = 0f
-            for (item in 0..temp.length-1){
+            val sp = stringBuffer?.toSpanned()
+            val spans = sp!!.getSpans(0, stringBuffer!!.length, Any::class.java)
+
+            for (item in stringBuffer!!.indices){
                 if (tempWidth > (width) - paddingLeft - paddingRight){
                     tempWidth = width - tempWidth
                 }
-                tempWidth += paint.measureText("${temp[item]}")
+                if (item < spans.size){
+                    //这两个span会改变字体大小，这里做一下特殊处理
+                    if (spans[item] is RelativeSizeSpan){
+                        tempWidth += paint.measureText(stringBuffer!![item].toString())*(spans[item] as RelativeSizeSpan).sizeChange
+                    }else if (spans[item] is AbsoluteSizeSpan){
+                        tempWidth += ModuleUtils.dip2px(context, (spans[item] as AbsoluteSizeSpan).size.toFloat()
+                        )
+                    }else{
+                        tempWidth += paint.measureText(stringBuffer!![item].toString())
+                    }
+                }else{
+                    tempWidth += paint.measureText(stringBuffer!![item].toString())
+                }
             }
-            val test = addToEndText
-            var tempTestLenght =paint.measureText(test)
+            var tempTestLenght =paint.measureText(addToEndText)
             //如果最终的剩余宽度足够添加末尾文字，则添加末尾文字
             if (tempWidth + tempTestLenght < width-paddingLeft-paddingRight){
                 return false
@@ -1027,7 +1050,7 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
                 return false
             }else{
                 //原本的字符长度太长，无法进行插入，则直接开启下一行进行插入
-                stringBuffer = SpannableStringBuilder(stringBuffer!!.subSequence(0,temp.length-addToEndText!!.length))
+                stringBuffer = SpannableStringBuilder(stringBuffer!!.subSequence(0, (stringBuffer!!.length-addToEndText!!.length*1.5).toInt()))
                 stringBuffer?.append("...")
                 text = stringBuffer
                 return true
@@ -1096,24 +1119,13 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
             return
         }
         addToEndText?.let {
-            val start  = layout.getLineStart(lineCount-1)
-            val end = layout.getLineEnd(lineCount-1)
-            val tempText = text.substring(start,end)
-            var lastLineWidth = 0
-            for (item in tempText){
-                lastLineWidth+=paint.measureText("${item}").toInt()
-            }
-            if (paint.measureText(it) >= width-paddingLeft-paddingRight - lastLineWidth){
-                return
-            }
-
             canvas?.save()
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 val spannableString = SpannableString.valueOf(addToEndText)
-                val relativeSizeSpan = RelativeSizeSpan(0.6f)
+                //val relativeSizeSpan = RelativeSizeSpan(0.6f)
                 val styleSpan = StyleSpan(android.graphics.Typeface.BOLD)
                 spannableString.setSpan(styleSpan, 0, addToEndText!!.length - 1, Spanned.SPAN_INCLUSIVE_EXCLUSIVE)
-                spannableString.setSpan(relativeSizeSpan, addToEndText!!.length- 1, addToEndText!!.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                //spannableString.setSpan(relativeSizeSpan, addToEndText!!.length- 1, addToEndText!!.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
                 val staticLaout = StaticLayout.Builder.obtain(spannableString,0,spannableString.length,paint,paint.measureText(addToEndText).toInt())
                 canvas?.translate(width - paint.measureText(addToEndText) - paddingRight,layout.height- (-paint.ascent() + paint.descent())/2)
                 staticLaout.setAlignment(Layout.Alignment.ALIGN_NORMAL)
