@@ -2,19 +2,18 @@ package com.textutils.textview.view
 
 import android.content.Context
 import android.graphics.*
+import android.os.Build
 import android.text.*
-import android.text.TextUtils.TruncateAt
 import android.text.method.LinkMovementMethod
 import android.text.style.*
 import android.util.AttributeSet
 import android.util.Log
+import android.view.Gravity
 import android.view.View
-import android.widget.TextView
 import com.textutils.textview.R
 import com.textutils.textview.SuperTextClickListener
 import com.textutils.textview.utils.ModuleUtils
 import com.textutils.textview.utils.TextUtils
-import java.lang.Exception
 
 
 /**
@@ -93,6 +92,8 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
     private var backgroundSrcPaint:Paint = Paint()
     //绘制描边的颜色
     private var strokePaint:Paint = Paint()
+    //textview的行数
+    var superTextLineCount:Int = 0
     private var roundValue = Array<Float>(8,{0f})
 
 
@@ -995,8 +996,9 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
             drawPortraintText(canvas)
         } else {
             //普通排版
-            drawAddTo(canvas)
             super.onDraw(canvas)
+            superTextLineCount = lineCount
+            drawAddTo(canvas)
         }
     }
 
@@ -1055,63 +1057,40 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
      * 获取值追加文字
      */
     private fun drawAddTo(canvas: Canvas?) {
+        //存在水平居中的没必要添加追加文字，顾直接结束掉
+        if (gravity == Gravity.CENTER || gravity == Gravity.CENTER_HORIZONTAL){
+            return
+        }
         addToEndText?.let {
-         /*   val textWidth = paint.measureText(addToEndText)   // 文字宽度
-            val textHeight = -paint.ascent() + paint.descent()  // 文字高度
-            // 由于 StaticLayout 绘制文字时，默认画在Canvas的(0,0)点位置，所以居中绘制居中位置，需要将画布 translate到中间位置。
-            canvas?.translate(width-textWidth, height-textHeight)
-            val styleSpan = StyleSpan(android.graphics.Typeface.BOLD)
-            val spannableString = SpannableString.valueOf(addToEndText)
-            val relativeSizeSpan = RelativeSizeSpan(0.6f)
-            spannableString.setSpan(styleSpan, 0, addToEndText!!.length - 1, Spanned.SPAN_INCLUSIVE_EXCLUSIVE)
-            spannableString.setSpan(relativeSizeSpan, addToEndText!!.length- 1, addToEndText!!.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-            //val dynamicLayout = DynamicLayout(spannableString, paint, getWidth(), Layout.Alignment.ALIGN_NORMAL, 0f, 0f, false);
-            val buil = DynamicLayout.Builder.obtain(it,paint,it.length).build()
-            buil.draw(canvas)*/
-            //dynamicLayout.draw(canvas);
-
-            stringBuffer?.let {
-                //如果追加过文本，需要将追加的文本去除
-                var temp = it.toString()
-                var tempWidth = 0f
-                for (item in 0..temp.length-1){
-                    if (tempWidth > (width) - paddingLeft - paddingRight){
-                        tempWidth = width - tempWidth
-                    }
-                    tempWidth += paint.measureText("${temp[item]}")
-                }
-                val test = addToEndText
-                var tempTestLenght =paint.measureText(test)
-                //如果最终的剩余宽度足够添加末尾文字，则添加末尾文字
-                if (tempWidth + tempTestLenght < width-paddingLeft-paddingRight){
-                    //计算末尾需要补充的占位符个数
-                    val placeholderCount = (width - tempWidth - tempTestLenght - paddingLeft - paddingRight)/paint.measureText(" ")
-                    //插入占位符
-                    for (item in 0..placeholderCount.toInt()-1){
-                        stringBuffer?.append(" ")
-                        excludeStr += " "
-                    }
-                    excludeStr+=test
-                    stringBuffer?.append(test)
-                }else if ( tempWidth + tempTestLenght == width.toFloat()-paddingLeft-paddingRight ){
-                    //此时因为之前的原有字符加末尾的字符等于textview的宽度，这时可以直接插入
-                    stringBuffer?.append(test)
-                    excludeStr+=test
-                }else{
-                    //原本的字符长度太长，无法进行插入，则直接开启下一行进行插入
-                    stringBuffer?.append("\n")
-                    excludeStr+="\n"
-                    val placeholderCount = (width - tempTestLenght - paddingLeft - paddingRight)/paint.measureText(" ")
-                    for (item in 0..((placeholderCount.toInt())-1)){
-                        stringBuffer?.append(" ")
-                        excludeStr += " "
-                    }
-                    excludeStr+=test
-                    stringBuffer?.append(test)
-                }
-                text =stringBuffer
-                addToEndText = null
+            val start  = layout.getLineStart(lineCount-1)
+            val end = layout.getLineEnd(lineCount-1)
+            val tempText = text.substring(start,end)
+            var lastLineWidth = 0
+            for (item in tempText){
+                lastLineWidth+=paint.measureText("${item}").toInt()
             }
+            if (paint.measureText(it) >= width-paddingLeft-paddingRight - lastLineWidth){
+                return
+            }
+
+            canvas?.save()
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                val spannableString = SpannableString.valueOf(addToEndText)
+                val relativeSizeSpan = RelativeSizeSpan(0.6f)
+                val styleSpan = StyleSpan(android.graphics.Typeface.BOLD)
+                spannableString.setSpan(styleSpan, 0, addToEndText!!.length - 1, Spanned.SPAN_INCLUSIVE_EXCLUSIVE)
+                spannableString.setSpan(relativeSizeSpan, addToEndText!!.length- 1, addToEndText!!.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                val staticLaout = StaticLayout.Builder.obtain(spannableString,0,spannableString.length,paint,paint.measureText(addToEndText).toInt())
+                canvas?.translate(width - paint.measureText(addToEndText) - paddingRight,layout.height- (-paint.ascent() + paint.descent())/2)
+                staticLaout.setAlignment(Layout.Alignment.ALIGN_NORMAL)
+                staticLaout.build().draw(canvas)
+            } else {
+                val staticLaout = StaticLayout(addToEndText, paint, paint.measureText(addToEndText).toInt(), Layout.Alignment.ALIGN_NORMAL, lineSpacingMultiplier, lineSpacingExtra, includeFontPadding)
+                canvas?.translate(width - paint.measureText(addToEndText) - paddingRight,height/2 - (-paint.ascent() + paint.descent())/2)
+                staticLaout.draw(canvas)
+            }
+
+            canvas?.restore()
         }
     }
 
