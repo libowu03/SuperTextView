@@ -65,10 +65,10 @@
             <enum name="start" value="0"/>
             <!--从右边开始绘制文字-->
             <enum name="end" value="1"/>
-<!--            &lt;!&ndash;从左边、中间位置开始绘制竖排文字&ndash;&gt;
+            <!--从左边、中间位置开始绘制竖排文字-->
             <enum name="centerStart" value="2"/>
-            &lt;!&ndash;从右边、中间位置开始绘制竖排文字&ndash;&gt;
-            <enum name="centerEnd" value="3"/>-->
+            <!--从右边、中间位置开始绘制竖排文字-->
+            <enum name="centerEnd" value="3"/>
         </attr>
         <!--追加文字到文本末尾，追加的文本始终位于文本最右边，追加文本与文本之间使用空格当做占位符-->
         <attr name="stAddToEndText" format="string"/>

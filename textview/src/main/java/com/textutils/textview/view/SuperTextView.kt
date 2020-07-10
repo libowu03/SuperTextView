@@ -4,20 +4,19 @@ import android.content.Context
 import android.graphics.*
 import android.os.Build
 import android.text.*
-import android.text.method.LinkMovementMethod
 import android.text.style.*
 import android.util.AttributeSet
 import android.util.Log
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
-import android.view.ViewGroup
 import androidx.core.text.toSpanned
 import com.textutils.textview.R
 import com.textutils.textview.SuperTextAddTextClickListener
 import com.textutils.textview.SuperTextClickListener
 import com.textutils.textview.utils.ModuleUtils
 import com.textutils.textview.utils.TextUtils
+import kotlin.math.max
 
 
 /**
@@ -104,7 +103,10 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
     var superTextLineCount:Int = 0
     //文本追加区域的绘制矩阵,由于未知原因，在span中设置点击无效，只能通过点击是否在矩阵中进行判定了
     var addTextRect:RectF?= null
-
+    //竖排文字每列的高度
+    private var rowTextHeight = 0
+    //竖排文字的宽度
+    private var rowTextWidth = 0
     private var roundValue = Array<Float>(8,{0f})
 
 
@@ -135,6 +137,7 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
         strokePaint.style = Paint.Style.STROKE
         strokePaint.strokeWidth = superStrokeWidth
         strokePaint.isAntiAlias = true
+
     }
 
     /**
@@ -1025,6 +1028,8 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
             return
         }
 
+
+
         //绘制填充的背景色
         val path = Path()
         path.addRoundRect(RectF(0f+strokePaint.strokeWidth/2,0f+strokePaint.strokeWidth/2,width.toFloat()-strokePaint.strokeWidth/2,height.toFloat()-strokePaint.strokeWidth/2),roundValue.toFloatArray(),Path.Direction.CW)
@@ -1037,7 +1042,6 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
         val pathStroke = Path()
         pathStroke.addRoundRect(RectF(0f+strokePaint.strokeWidth/2,0f+strokePaint.strokeWidth/2,width.toFloat()-strokePaint.strokeWidth/2,height.toFloat()-strokePaint.strokeWidth/2),roundValue.toFloatArray(),Path.Direction.CW)
         canvas?.drawPath(pathStroke,strokePaint)
-
 
         if (superTextEnablePortrait) {
             //竖排文字
@@ -1053,6 +1057,8 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
             drawAddTo(canvas)
         }
     }
+
+
 
     /**
      * 这里对追加文本做一些判断，如果原文本最后一行剩余空白空间不足以显示追加文本，则原文本做出让步，原文不末尾部分数据变成。"..."的形式
@@ -1118,37 +1124,60 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
             val stopY = it.height - paddingBottom
             var row = 0
             var col = 0
+
+            //行距最小距离为1，不允许小于1
+            var lineScale = lineSpacingMultiplier
+            var wordSscale = wordSpacingMultiplier
+            if (lineScale < 1){
+                lineScale = 1f
+            }
+            if (wordSscale < 1){
+                wordSscale = 1f
+            }
+            //文字宽度
+            val charWidth =  paint.measureText(portaitStr)
+            //文字高度
+            val charHeight = (-paint.ascent() + paint.descent())
+            //计算行距
+            val rowSpace = Math.abs(lineScale - 1.0f)*charHeight
+            val colSpace = Math.abs(wordSscale - 1.0f)*charWidth
+            //可现实最大列数
+            val maxRow = ((width - paddingLeft - paddingRight) / (charWidth+colSpace)).toInt()
+            //当前文字的列数
+            val currentTextRow = text.toString().length / maxLines
+            if (superTextGravity == SuperTextConfig.Gravity.CENTER_START){
+                canvas.translate((width/2).toFloat() - ((Math.min(maxRow,currentTextRow)*charWidth + ((Math.min(maxRow,currentTextRow)+0)*colSpace)))/2 - charWidth, height/2 - (charHeight * Math.min(text.length,maxLines+1) + rowSpace*Math.min(text.length,maxLines+1))/2)
+            }else if (superTextGravity == SuperTextConfig.Gravity.CENTER_END){
+                canvas.translate(-(width/2).toFloat() + ((Math.min(maxRow,currentTextRow)*charWidth + ((Math.min(maxRow,currentTextRow)+0)*colSpace)))/2 + charWidth, height/2 - (charHeight * Math.min(text.length,maxLines+1) + rowSpace*Math.min(text.length,maxLines+1))/2)
+            }
+
             paint.color = superColor
             for (item in text.withIndex()){
-                //行距最小距离为1，不允许小于1
-                var lineScale = lineSpacingMultiplier
-                var wordSscale = wordSpacingMultiplier
-                if (lineScale < 1){
-                    lineScale = 1f
+                if (row > maxRow){
+                    Log.e("日志","${row},${maxRow}")
+                    break
                 }
-                if (wordSscale < 1){
-                    wordSscale = 1f
-                }
-                //计算行距
-                val rowSpace = Math.abs(lineScale - 1.0f)*paint.measureText(portaitStr)
-                val colSpace = Math.abs(wordSscale - 1.0f)*paint.measureText(portaitStr)
                 //计算文字y坐标
-                var y = startY + (paint.measureText(portaitStr) + rowSpace )*col+paint.measureText(portaitStr)
+                var y = startY + (charHeight + rowSpace )*col+charHeight
                 //不允许y坐标超出画布
                 if (y > stopY){
                     row++
                     col = 0
-                    y = startY + (paint.measureText(portaitStr) + rowSpace )*col+paint.measureText(portaitStr)
+                    y = startY + (charHeight + rowSpace )*col+charHeight
                     col = 1
                 }else{
                     col++
                 }
+                if ( (row*charWidth+(row+1)*colSpace) > (width-paddingRight - paddingLeft) ){
+                    break
+                }
+
                 //计算文字x坐标
                 var x = startX.toFloat() + (paint.measureText(portaitStr))*row
-                if (superTextGravity == SuperTextConfig.Gravity.LEFT){
-                    x = startX.toFloat() + (paint.measureText(portaitStr)+colSpace)*row
-                }else if (superTextGravity == SuperTextConfig.Gravity.RIGHT){
-                    x = endX - (paint.measureText(portaitStr)+colSpace)*row - paint.measureText(portaitStr)
+                if (superTextGravity == SuperTextConfig.Gravity.LEFT || superTextGravity == SuperTextConfig.Gravity.CENTER_START){
+                    x = startX.toFloat() + (charWidth+colSpace)*row
+                }else if (superTextGravity == SuperTextConfig.Gravity.RIGHT || superTextGravity == SuperTextConfig.Gravity.CENTER_END){
+                    x = endX - (charHeight+colSpace)*row - charHeight
                 }
                 //绘制文本
                 canvas.drawText(item.value.toString(), x,y,paint)
@@ -1249,29 +1278,53 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
         return when (specMode) {
             MeasureSpec.UNSPECIFIED -> {
                 if (isHeight) {
+                    Log.e("日志","UNSPECIFIED")
+
                     if (maxLines < text.toString().length) {
+                        rowTextHeight = (paint.measureText(portaitStr) * maxLines + rowSpace).toInt()
                         (paint.measureText(portaitStr) * maxLines + rowSpace).toInt() + paddingTop + paddingBottom
                     } else {
+                        rowTextHeight = (paint.measureText(portaitStr) * text.toString().length + rowSpace).toInt()
                         (paint.measureText(portaitStr) * text.toString().length + rowSpace).toInt() + paddingTop + paddingBottom
                     }
                 } else {
+                    rowTextWidth =  (rowNum * (paint.measureText(portaitStr)) + colSpace).toInt()
                     (rowNum * (paint.measureText(portaitStr)) + colSpace).toInt() + paddingLeft + paddingRight
                 }
             }
             MeasureSpec.AT_MOST -> {
                 //设定宽高原则是，总列数宽度或总行数高度与可用宽度或高度比较，哪个值小使用那个，这样可以避免文字内容溢出可用宽度或高度的情况
                 if (isHeight) {
+                    Log.e("日志","AT_MOST")
                     if (maxLines < text.toString().length) {
+                        rowTextHeight = Math.min((paint.measureText(portaitStr) * maxLines + rowSpace).toInt(),specSize)
                         Math.min((paint.measureText(portaitStr) * maxLines + rowSpace).toInt() + paddingTop + paddingBottom, specSize)
                     } else {
+                        rowTextHeight = Math.min((paint.measureText(portaitStr) * text.toString().length + rowSpace).toInt(),specSize)
                         Math.min((paint.measureText(portaitStr) * text.toString().length + rowSpace).toInt() + paddingTop + paddingBottom, specSize)
                     }
                 } else {
+                    rowTextWidth =  Math.min((rowNum * (paint.measureText(portaitStr)) + colSpace).toInt(), specSize)
                     Math.min((rowNum * (paint.measureText(portaitStr)) + colSpace).toInt() + paddingLeft + paddingRight, specSize)
                 }
+
             }
             MeasureSpec.EXACTLY -> {
-                specSize
+                /*specSize*/
+                //设定宽高原则是，总列数宽度或总行数高度与可用宽度或高度比较，哪个值小使用那个，这样可以避免文字内容溢出可用宽度或高度的情况
+                if (isHeight) {
+                    Log.e("日志","AT_MOST")
+                    if (maxLines < text.toString().length) {
+                        rowTextHeight = (paint.measureText(portaitStr) * maxLines + rowSpace).toInt()
+                        Math.min((paint.measureText(portaitStr) * maxLines + rowSpace).toInt() + paddingTop + paddingBottom, specSize)
+                    } else {
+                        rowTextHeight = (paint.measureText(portaitStr) * text.toString().length + rowSpace).toInt()
+                        Math.min((paint.measureText(portaitStr) * text.toString().length + rowSpace).toInt() + paddingTop + paddingBottom, specSize)
+                    }
+                } else {
+                    rowTextWidth = specSize
+                    specSize
+                }
             }
             else -> {
                 size
