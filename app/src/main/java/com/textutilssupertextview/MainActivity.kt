@@ -44,22 +44,22 @@ class MainActivity : AppCompatActivity() {
 
 
 
-/*        testOne.text = "反倒可能发放到"
-        testOne.setSpanSuperscript("放")
-            .setSpanColor("放",Color.RED)
-            .setSpanScalePercent("放",0.5f)
+        testOne.text = "反倒可能发放到"
+        testOne.setSpanSuperscriptStr("放")
+            .setSpanColorStr()
+            .setSpanScalePercentStr(0.5f)
         testOne.setFontFace("font.TTF")
 
         testOne.setSpanColor(0,1,Color.RED)
-        testTwo.setSpanColor("Hello",Color.RED)
+        testTwo.setSpanColorStr(Color.RED,"Hello")
         testThree.setSpanItalic(0,1)
-        testFour.setSpanItalic("Hello")
+        testFour.setSpanItalicStr("Hello")
         testFive.setSpanBold(0,1)
-        testSix.setSpanBold("Hello")
+        testSix.setSpanBoldStr("Hello")
         testOneSeven.setSpanBackgroundColor(0,1,Color.RED)
         testOneEight.setSpanImage(0,1,R.drawable.ic_launcher,true)
-        testNice.setSpanBackgroundColor("Hello",Color.RED)
+        testNice.setSpanBackgroundColorStr(Color.RED,"Hello")
         testTen.setSpanClick(0,1)
-        testTen.setSpanClick("World",false)*/
+        testTen.setSpanClickStr("World",false)
     }
 }
