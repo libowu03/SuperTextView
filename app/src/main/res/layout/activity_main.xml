@@ -6,23 +6,20 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     tools:context=".MainActivity">
-
     <com.textutils.textview.view.SuperTextView
         android:layout_width="match_parent"
-        android:layout_height="200dp"
+        android:layout_height="match_parent"
         android:layout_margin="10dp"
         android:gravity="center_horizontal"
-        android:lineSpacingMultiplier="1.0"
-        android:maxLines="6"
-        android:padding="10dp"
+        android:lineSpacingMultiplier="2.5"
+        android:maxLines="5"
         app:stCorner="10dp"
         app:stEnablePortrait="true"
         app:stSolidColor="@color/colorAccent"
         android:textColor="#ffffff"
-        app:stFontFace="font.TTF"
-        android:textSize="10dp"
+        android:textSize="12dp"
         app:stWordSpacingMultiplier="1.5"
-        android:text="白日依山尽黄河入海流欲穷千里目更上一层楼白日依山尽黄河入海流欲穷千里目更上一层楼白日依山尽黄河入海流欲穷千里目更上一层楼白日依山尽黄河入海流欲穷千里目更上一层楼"
+        android:text="白日依山尽黄河入海流欲穷千里目更上一层楼白日依山尽黄河入海流欲穷千里目更上一层楼白日依山尽黄河入海流欲穷千里目更上一层楼"
         app:stGravity="centerEnd" />
 
     <com.textutils.textview.view.SuperTextView

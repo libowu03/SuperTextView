@@ -1579,7 +1579,7 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
         if (addToEndText == null) {
             return false
         }
-        //如果文本为空，没必要测量，onDraw方法也没必要执行了。直接返回true结束onDraw方法
+        //如果文本为空，没必要测量，onDraw方法也没必要执行了。直接返回true结束onDraw方法f
         if (stringBuffer.isNullOrEmpty()) {
             return true
         }
@@ -1639,6 +1639,7 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
 
     /**
      * 绘制竖排文字
+     * 如果不设置最大行数,则最大行数就是int的最大值
      */
     private fun drawPortraintText(canvas: Canvas?) {
         canvas?.let {
@@ -1666,31 +1667,31 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
             val rowSpace = abs(lineScale - 1.0f) * charHeight
             val colSpace = abs(wordScale - 1.0f) * charWidth
             //可现实最大列数
-            val maxRow = ((width - paddingLeft - paddingRight) / (charWidth + colSpace)).toInt()
+            val maxRow = ( ((width - paddingLeft - paddingRight) / (charWidth + colSpace))+0.99 ).toInt()
             //当前文字的列数
-            val currentTextRow = maxRow.coerceAtMost((text.toString().length / (maxLines-1)))
-
+            val currentTextRow = maxRow.coerceAtMost((text.toString().length / (maxLines)))
             //计算文字总体绘制的起始点
-            if (superTextGravity == SuperTextConfig.Gravity.CENTER_START || superTextGravity == SuperTextConfig.Gravity.CENTER_END) {
+            Log.e(LOG,"列数:${currentTextRow},${maxRow}")
+
+            if ( (superTextGravity == SuperTextConfig.Gravity.CENTER_START || superTextGravity == SuperTextConfig.Gravity.CENTER_END)) {
                 val tempStartY = height/2.0f - text.length.coerceAtMost(maxLines)/2.0f*(charHeight+rowSpace)
                 if (tempStartY > startY){
                     startY = tempStartY.toInt()
                 }
 
-                val tempStartX = width/2.0f - currentTextRow/2*(charWidth+colSpace)
+                val tempStartX = width/2.0f - (currentTextRow/2-0)*(charWidth+colSpace) + (charWidth+colSpace)/2
                 if (tempStartX > startX){
                     startX = tempStartX.toInt()
                 }
 
-                val tempEndX =  width - (maxRow/2 - currentTextRow/2)*(charWidth+colSpace)
+                val tempEndX =  width - ( (maxRow/2.0f - currentTextRow/2.0f) +1)*(charWidth+colSpace) + (charWidth+colSpace)/2
                 if (tempEndX < endX){
                     endX = tempEndX.toInt()
                 }
 
-                //Log.e(LOG,"列数:${currentTextRow}")
+                Log.e(LOG,"列数:${currentTextRow},${text.length},${maxLines}")
                 //backgroundSrcPaint.color = Color.RED
-                //canvas.drawRect(RectF(startX.toFloat(), startY.toFloat(),width/2.0f,startY+(charHeight+rowSpace)*maxLines),backgroundSrcPaint)
-
+                //canvas.drawRect(RectF(endX.toFloat(), startY.toFloat(),width/2.0f,startY+(charHeight+rowSpace)*maxLines),backgroundSrcPaint)
             }
 
             paint.color = superColor
@@ -1699,29 +1700,29 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
                     break
                 }
                 //计算文字y坐标y
-                var y = startY + (charHeight + rowSpace) * col + charHeight
+                var y = startY + (charHeight + rowSpace) * col
                 //不允许y坐标超出画布
-                if (y > stopY) {
+                if (y > stopY || col >= maxLines) {
                     row++
                     col = 0
-                    y = startY + (charHeight + rowSpace) * col + charHeight
+                    y = startY + (charHeight + rowSpace) * col
                     col = 1
                 } else {
                     col++
                 }
-                if ((row * charWidth + (row + 1) * colSpace) > (width - paddingRight - paddingLeft)) {
+                if ( (charWidth + colSpace)*row > (width - paddingRight - paddingLeft)) {
                     break
                 }
 
                 //计算文字x坐标
-                var x = startX.toFloat() + (paint.measureText(portraitStr)) * row
+                var x = startX.toFloat() + (charWidth) * row
                 if (superTextGravity == SuperTextConfig.Gravity.LEFT || superTextGravity == SuperTextConfig.Gravity.CENTER_START) {
                     x = startX.toFloat() + (charWidth + colSpace) * row
                 } else if (superTextGravity == SuperTextConfig.Gravity.RIGHT || superTextGravity == SuperTextConfig.Gravity.CENTER_END) {
-                    x = endX - (charHeight + colSpace) * row - charHeight
+                    x = endX - (charWidth + colSpace) * row - charWidth
                 }
                 //绘制文本
-                canvas.drawText(item.value.toString(), x, y, paint)
+                canvas.drawText(item.value.toString(), x+colSpace/4, y+charHeight, paint)
             }
 
         }
@@ -1842,23 +1843,22 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
         } else {
             text.toString().length / maxLines + 1
         }
+        //文字宽度
+        val charWidth = paint.measureText(portraitStr)
+        //文字高度
+        val charHeight = (-paint.ascent() + paint.descent())
         return when (specMode) {
             MeasureSpec.UNSPECIFIED -> {
                 if (isHeight) {
                     Log.e("日志", "UNSPECIFIED")
 
                     if (maxLines < text.toString().length) {
-                        rowTextHeight =
-                            (paint.measureText(portraitStr) * maxLines + rowSpace).toInt()
-                        (paint.measureText(portraitStr) * maxLines + rowSpace).toInt() + paddingTop + paddingBottom
+                        (charHeight * maxLines + rowSpace).toInt() + paddingTop + paddingBottom
                     } else {
-                        rowTextHeight =
-                            (paint.measureText(portraitStr) * text.toString().length + rowSpace).toInt()
-                        (paint.measureText(portraitStr) * text.toString().length + rowSpace).toInt() + paddingTop + paddingBottom
+                        (charHeight * text.toString().length + rowSpace).toInt() + paddingTop + paddingBottom
                     }
                 } else {
-                    rowTextWidth = (rowNum * (paint.measureText(portraitStr)) + colSpace).toInt()
-                    (rowNum * (paint.measureText(portraitStr)) + colSpace).toInt() + paddingLeft + paddingRight
+                    (rowNum * (charWidth) + colSpace).toInt() + paddingLeft + paddingRight
                 }
             }
             MeasureSpec.AT_MOST -> {
@@ -1866,31 +1866,19 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
                 if (isHeight) {
                     Log.e("日志", "AT_MOST")
                     if (maxLines < text.toString().length) {
-                        rowTextHeight = Math.min(
-                            (paint.measureText(portraitStr) * maxLines + rowSpace).toInt(),
-                            specSize
-                        )
                         Math.min(
-                            (paint.measureText(portraitStr) * maxLines + rowSpace).toInt() + paddingTop + paddingBottom,
+                            (charHeight * maxLines + rowSpace).toInt() + paddingTop + paddingBottom,
                             specSize
                         )
                     } else {
-                        rowTextHeight = Math.min(
-                            (paint.measureText(portraitStr) * text.toString().length + rowSpace).toInt(),
-                            specSize
-                        )
                         Math.min(
-                            (paint.measureText(portraitStr) * text.toString().length + rowSpace).toInt() + paddingTop + paddingBottom,
+                            (charHeight * text.toString().length + rowSpace).toInt() + paddingTop + paddingBottom,
                             specSize
                         )
                     }
                 } else {
-                    rowTextWidth = Math.min(
-                        (rowNum * (paint.measureText(portraitStr)) + colSpace).toInt(),
-                        specSize
-                    )
                     Math.min(
-                        (rowNum * (paint.measureText(portraitStr)) + colSpace).toInt() + paddingLeft + paddingRight,
+                        (rowNum * (charWidth) + colSpace).toInt() + paddingLeft + paddingRight - (abs(wordScale - 1.0f) * charWidth).toInt()/2,
                         specSize
                     )
                 }
@@ -1900,8 +1888,8 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
                 /*specSize*/
                 //设定宽高原则是，总列数宽度或总行数高度与可用宽度或高度比较，哪个值小使用那个，这样可以避免文字内容溢出可用宽度或高度的情况
                 if (isHeight) {
-                    Log.e("日志", "AT_MOST")
-                    if (maxLines < text.toString().length) {
+                    Log.e("日志", "EXACTLY")
+                   /* if (maxLines < text.toString().length) {
                         rowTextHeight =
                             (paint.measureText(portraitStr) * maxLines + rowSpace).toInt()
                         Math.min(
@@ -1915,7 +1903,8 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
                             (paint.measureText(portraitStr) * text.toString().length + rowSpace).toInt() + paddingTop + paddingBottom,
                             specSize
                         )
-                    }
+                    }*/
+                    specSize
                 } else {
                     rowTextWidth = specSize
                     specSize
