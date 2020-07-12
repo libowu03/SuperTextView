@@ -6,21 +6,24 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     tools:context=".MainActivity">
+    <!--白日依山尽黄河入海流欲穷千里目更上一层楼-->
     <com.textutils.textview.view.SuperTextView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
         android:layout_margin="10dp"
         android:gravity="center_horizontal"
-        android:lineSpacingMultiplier="2.5"
-        android:maxLines="5"
+        android:lineSpacingMultiplier="1"
         app:stCorner="10dp"
+        android:maxLines="5"
         app:stEnablePortrait="true"
-        app:stSolidColor="@color/colorAccent"
+        app:stSolidColor="#dd098778"
+        app:stFontFace="font.TTF"
+        android:background="@mipmap/pj"
         android:textColor="#ffffff"
-        android:textSize="12dp"
+        android:textSize="13dp"
         app:stWordSpacingMultiplier="1.5"
         android:text="白日依山尽黄河入海流欲穷千里目更上一层楼白日依山尽黄河入海流欲穷千里目更上一层楼白日依山尽黄河入海流欲穷千里目更上一层楼"
-        app:stGravity="centerEnd" />
+        app:stGravity="centerStart" />
 
     <com.textutils.textview.view.SuperTextView
         android:id="@+id/testOne"

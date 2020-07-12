@@ -1650,6 +1650,7 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
             var row = 0
             var col = 0
 
+
             //行距最小距离为1，不允许小于1
             var lineScale = lineSpacingMultiplier
             var wordScale = wordSpacingMultiplier
@@ -1666,6 +1667,11 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
             //计算行距
             val rowSpace = abs(lineScale - 1.0f) * charHeight
             val colSpace = abs(wordScale - 1.0f) * charWidth
+            //如果不设置最大值,通过计算画布给出一个最大列数
+            Log.e(LOG,"最大列数:${maxLines},${(height / (charHeight+rowSpace))}")
+            if (maxLines == Int.MAX_VALUE){
+                maxLines = (height / (charHeight+rowSpace)).toInt()
+            }
             //可现实最大列数
             val maxRow = ( ((width - paddingLeft - paddingRight) / (charWidth + colSpace))+0.99 ).toInt()
             //当前文字的列数
@@ -1674,17 +1680,18 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
             Log.e(LOG,"列数:${currentTextRow},${maxRow}")
 
             if ( (superTextGravity == SuperTextConfig.Gravity.CENTER_START || superTextGravity == SuperTextConfig.Gravity.CENTER_END)) {
-                val tempStartY = height/2.0f - text.length.coerceAtMost(maxLines)/2.0f*(charHeight+rowSpace)
+                val tempStartY = height/2.0f - text.length.coerceAtMost(maxLines)/2.0f*(charHeight+rowSpace)+rowSpace/3
                 if (tempStartY > startY){
                     startY = tempStartY.toInt()
                 }
 
-                val tempStartX = width/2.0f - (currentTextRow/2-0)*(charWidth+colSpace) + (charWidth+colSpace)/2
+                val tempStartX = width/2.0f - (currentTextRow/2)*(charWidth+colSpace) - charWidth/1.3
                 if (tempStartX > startX){
                     startX = tempStartX.toInt()
                 }
 
-                val tempEndX =  width - ( (maxRow/2.0f - currentTextRow/2.0f) +1)*(charWidth+colSpace) + (charWidth+colSpace)/2
+                //val tempEndX =  width - ( (maxRow/2.0f - currentTextRow/2.0f) +1)*(charWidth+colSpace) + (charWidth+colSpace)/2
+                val tempEndX =  width - (maxRow/2 - currentTextRow/2)*(charWidth+colSpace)
                 if (tempEndX < endX){
                     endX = tempEndX.toInt()
                 }
@@ -1702,7 +1709,7 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
                 //计算文字y坐标y
                 var y = startY + (charHeight + rowSpace) * col
                 //不允许y坐标超出画布
-                if (y > stopY || col >= maxLines) {
+                if (col >= maxLines) {
                     row++
                     col = 0
                     y = startY + (charHeight + rowSpace) * col
@@ -1722,9 +1729,17 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
                     x = endX - (charWidth + colSpace) * row - charWidth
                 }
                 //绘制文本
-                canvas.drawText(item.value.toString(), x+colSpace/4, y+charHeight, paint)
+                if (currentTextRow == 1 && maxRow == 1){
+                    canvas.drawText(item.value.toString(), x, y+charHeight/1.2f, paint)
+                }else{
+                    canvas.drawText(item.value.toString(), x + charWidth/4, y+charHeight/1.2f, paint)
+                }
             }
 
+    /*        backgroundSrcPaint.color = Color.RED
+            canvas.drawLine((width/2).toFloat(),0f, (width/2).toFloat(),
+                height.toFloat(),backgroundSrcPaint)
+            canvas.drawLine(0f, (height/2).toFloat(), width.toFloat(), (height/2).toFloat(),backgroundSrcPaint)*/
         }
 
     }
@@ -1872,14 +1887,12 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
                         )
                     } else {
                         Math.min(
-                            (charHeight * text.toString().length + rowSpace).toInt() + paddingTop + paddingBottom,
+                            (charHeight * (text.toString().length+1) + rowSpace).toInt() + paddingTop + paddingBottom,
                             specSize
                         )
                     }
                 } else {
-                    Math.min(
-                        (rowNum * (charWidth) + colSpace).toInt() + paddingLeft + paddingRight - (abs(wordScale - 1.0f) * charWidth).toInt()/2,
-                        specSize
+                    Math.min((rowNum * (charWidth) + colSpace).toInt() + paddingLeft + paddingRight - (abs(wordScale - 1.0f) * charWidth).toInt()/2, specSize
                     )
                 }
 
