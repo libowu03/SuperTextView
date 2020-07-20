@@ -8,7 +8,7 @@
     tools:context=".MainActivity">
     <!--白日依山尽黄河入海流欲穷千里目更上一层楼-->
     <com.textutils.textview.view.SuperTextView
-        android:layout_width="200dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="10dp"
         android:gravity="center_horizontal"
@@ -17,13 +17,14 @@
         android:maxLines="5"
         app:stEnablePortrait="true"
         app:stSolidColor="#dd098778"
+        android:id="@+id/testZero"
         app:stFontFace="font.TTF"
         android:background="@mipmap/pj"
         android:textColor="#ffffff"
         android:textSize="13dp"
         app:stWordSpacingMultiplier="1.5"
-        android:text="白日依山尽黄河入海流欲穷千里目更上一层楼白日依山尽黄河入海流欲穷千里目更上一层楼白日依山尽黄河入海流欲穷千里目更上一层楼"
-        app:stGravity="centerStart" />
+        android:text=""
+        app:stGravity="centerEnd" />
 
     <com.textutils.textview.view.SuperTextView
         android:id="@+id/testOne"
@@ -31,7 +32,6 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
-        android:gravity="center"
         android:text="方面大家看法呢放电脑卡烦恼"
         android:textColor="@color/colorPrimary"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -49,7 +49,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginLeft="10dp"
-        app:stFontFace="font.TTF"
         android:paddingTop="6dp"
         android:paddingBottom="6dp"
         android:lineSpacingMultiplier="1.5"
@@ -59,7 +58,7 @@
         android:layout_marginRight="10dp"
         android:paddingStart="10dp"
         android:paddingEnd="10dp"
-        android:text="Hello World!饭店开房你反馈的烦恼能否看到你发疯狂的那份反倒可能发的放得开了烦恼方法没打开了烦恼方面的浪费广告"
+        android:text=""
         android:textColor="#000000"
         android:textSize="12dp"
         app:layout_constraintBottom_toBottomOf="parent"

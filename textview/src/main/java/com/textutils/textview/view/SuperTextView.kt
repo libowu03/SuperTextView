@@ -3,6 +3,7 @@ package com.textutils.textview.view
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.*
+import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.text.*
 import android.text.style.*
@@ -11,6 +12,7 @@ import android.util.Log
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
+import android.webkit.WebSettings
 import androidx.core.text.toSpanned
 import com.textutils.textview.R
 import com.textutils.textview.SuperTextAddTextClickListener
@@ -18,7 +20,6 @@ import com.textutils.textview.SuperTextClickListener
 import com.textutils.textview.utils.ModuleUtils
 import com.textutils.textview.utils.TextUtils
 import kotlin.math.abs
-import kotlin.math.max
 
 
 /**
@@ -27,7 +28,7 @@ import kotlin.math.max
  */
 class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
     //追加文本的特殊样式
-    private var spannableString: SpannableStringBuilder? = null
+    private var addTextSpannableString: SpannableStringBuilder? = null
     private var stringBuffer: SpannableStringBuilder? = null
 
     //临时保存文字大小
@@ -147,6 +148,10 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
 
     //竖排文字的宽度
     private var rowTextWidth = 0
+
+    //将要设置样式的文本类型
+    private var stringType: StringType = StringType.NORMAL
+
     private var roundValue = Array<Float>(8, { 0f })
 
 
@@ -180,7 +185,7 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
      */
     private fun initAddText() {
         addToEndText?.let {
-            spannableString = SpannableStringBuilder(it)
+            addTextSpannableString = SpannableStringBuilder(it)
         }
     }
 
@@ -462,6 +467,7 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
      */
     private fun compareText(): Boolean {
         if (stringBuffer != null && !text.toString().equals(stringBuffer.toString())) {
+            setFontFace(superTextFontFace)
             stringBuffer = SpannableStringBuilder(text)
             matchStrArray.clear()
             return true
@@ -1336,179 +1342,235 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
         scaleValue: Int = this.superTextSize,
         refreshNow: Boolean = true,
         enableUnderLine: Boolean = this.enableClickUnderLine,
-        isCenter: Boolean = false,
-        stringBuffer: SpannableStringBuilder? = this.stringBuffer
+        isCenter: Boolean = false
     ) {
-        when (type) {
-            SuperTextConfig.Style.LINE -> {
-                val lineStyle = StrikethroughSpan()
-                stringBuffer?.setSpan(
-                    lineStyle,
-                    startPosition,
-                    endPosition,
-                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-                )
-                if (refreshNow) {
-                    text = stringBuffer
-                }
+        try {
+            //根据不同类别设置不同类型的文字
+            var stringBuffer = this.stringBuffer
+            stringBuffer = when (stringType) {
+                StringType.NORMAL -> this.stringBuffer
+                StringType.ADD_TEXT -> addTextSpannableString
             }
-            SuperTextConfig.Style.UNDER_LINE -> {
-                val underlineStyle = UnderlineSpan()
-                stringBuffer?.setSpan(
-                    underlineStyle,
-                    startPosition,
-                    endPosition,
-                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-                )
-                if (refreshNow) {
-                    text = stringBuffer
-                }
-            }
-            SuperTextConfig.Style.BOLD -> {
-                val styleSpa = StyleSpan(Typeface.BOLD)
-                stringBuffer?.setSpan(
-                    styleSpa,
-                    startPosition,
-                    endPosition,
-                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-                )
-                if (refreshNow) {
-                    text = stringBuffer
-                }
-            }
-            SuperTextConfig.Style.ITALIC -> {
-                val styleSpan = StyleSpan(Typeface.ITALIC)
-                stringBuffer?.setSpan(
-                    styleSpan,
-                    startPosition,
-                    endPosition,
-                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-                )
-                if (refreshNow) {
-                    text = stringBuffer
-                }
-            }
-            SuperTextConfig.Style.SCALE_PERCENT -> {
-                val styleSpan = RelativeSizeSpan(scalePercent)
-                stringBuffer?.setSpan(
-                    styleSpan,
-                    startPosition,
-                    endPosition,
-                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-                )
-                if (refreshNow) {
-                    text = stringBuffer
-                }
-            }
-            SuperTextConfig.Style.SCALE_VALUE -> {
-                val lineStyle = AbsoluteSizeSpan(scaleValue.toInt(), true)
-                stringBuffer?.setSpan(
-                    lineStyle,
-                    startPosition,
-                    endPosition,
-                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-                )
-                if (refreshNow) {
-                    text = stringBuffer
-                }
-            }
-            SuperTextConfig.Style.BACKGROUND_COLOR -> {
-                val backgroundColorSpan = BackgroundColorSpan(backgroundColor)
-                stringBuffer?.setSpan(
-                    backgroundColorSpan,
-                    startPosition,
-                    endPosition,
-                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-                )
-                if (refreshNow) {
-                    text = stringBuffer
-                }
-            }
-            SuperTextConfig.Style.COLOR -> {
-                val lineStyle = ForegroundColorSpan(superTextColor)
-                stringBuffer?.setSpan(
-                    lineStyle,
-                    startPosition,
-                    endPosition,
-                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-                )
-                if (refreshNow) {
-                    text = stringBuffer
-                }
-            }
-            SuperTextConfig.Style.IMG -> {
-                if (isCenter) {
-                    val imgspan = CenterAlignImageSpan(context!!, img)
+
+            when (type) {
+                SuperTextConfig.Style.LINE -> {
+                    val lineStyle = StrikethroughSpan()
                     stringBuffer?.setSpan(
-                        imgspan,
+                        lineStyle,
                         startPosition,
                         endPosition,
-                        Spanned.SPAN_INCLUSIVE_EXCLUSIVE
+                        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
                     )
-                } else {
-                    val imgspan = ImageSpan(context!!, img)
+                    if (refreshNow && stringType == StringType.NORMAL) {
+                        text = stringBuffer
+                    } else if (refreshNow && stringType == StringType.ADD_TEXT) {
+                        invalidate()
+                    }
+                }
+                SuperTextConfig.Style.UNDER_LINE -> {
+                    val underlineStyle = UnderlineSpan()
                     stringBuffer?.setSpan(
-                        imgspan,
+                        underlineStyle,
                         startPosition,
                         endPosition,
-                        Spanned.SPAN_INCLUSIVE_EXCLUSIVE
+                        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
                     )
+                    if (refreshNow && stringType == StringType.NORMAL) {
+                        text = stringBuffer
+                    } else if (refreshNow && stringType == StringType.ADD_TEXT) {
+                        invalidate()
+                    }
                 }
-                if (refreshNow) {
-                    text = stringBuffer
+                SuperTextConfig.Style.BOLD -> {
+                    val styleSpa = StyleSpan(Typeface.BOLD)
+                    stringBuffer?.setSpan(
+                        styleSpa,
+                        startPosition,
+                        endPosition,
+                        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
+                    if (refreshNow && stringType == StringType.NORMAL) {
+                        text = stringBuffer
+                    } else if (refreshNow && stringType == StringType.ADD_TEXT) {
+                        invalidate()
+                    }
                 }
-            }
-            SuperTextConfig.Style.CLICK -> {
-                val clickSpan = object : ClickableSpan() {
-                    override fun onClick(widget: View) {
-                        clickCallback?.onClick(
+                SuperTextConfig.Style.ITALIC -> {
+                    val styleSpan = StyleSpan(Typeface.ITALIC)
+                    stringBuffer?.setSpan(
+                        styleSpan,
+                        startPosition,
+                        endPosition,
+                        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
+                    if (refreshNow && stringType == StringType.NORMAL) {
+                        text = stringBuffer
+                    } else if (refreshNow && stringType == StringType.ADD_TEXT) {
+                        invalidate()
+                    }
+                }
+                SuperTextConfig.Style.SCALE_PERCENT -> {
+                    val styleSpan = RelativeSizeSpan(scalePercent)
+                    stringBuffer?.setSpan(
+                        styleSpan,
+                        startPosition,
+                        endPosition,
+                        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
+                    if (refreshNow && stringType == StringType.NORMAL) {
+                        text = stringBuffer
+                    } else if (refreshNow && stringType == StringType.ADD_TEXT) {
+                        invalidate()
+                    }
+                }
+                SuperTextConfig.Style.SCALE_VALUE -> {
+                    val lineStyle = AbsoluteSizeSpan(scaleValue.toInt(), true)
+                    stringBuffer?.setSpan(
+                        lineStyle,
+                        startPosition,
+                        endPosition,
+                        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
+                    if (refreshNow && stringType == StringType.NORMAL) {
+                        text = stringBuffer
+                    } else if (refreshNow && stringType == StringType.ADD_TEXT) {
+                        invalidate()
+                    }
+                }
+                SuperTextConfig.Style.BACKGROUND_COLOR -> {
+                    val backgroundColorSpan = BackgroundColorSpan(backgroundColor)
+                    stringBuffer?.setSpan(
+                        backgroundColorSpan,
+                        startPosition,
+                        endPosition,
+                        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
+                    if (refreshNow && stringType == StringType.NORMAL) {
+                        text = stringBuffer
+                    } else if (refreshNow && stringType == StringType.ADD_TEXT) {
+                        invalidate()
+                    }
+                }
+                SuperTextConfig.Style.COLOR -> {
+                    val lineStyle = ForegroundColorSpan(superTextColor)
+                    stringBuffer?.setSpan(
+                        lineStyle,
+                        startPosition,
+                        endPosition,
+                        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
+                    if (refreshNow && stringType == StringType.NORMAL) {
+                        text = stringBuffer
+                    } else if (refreshNow && stringType == StringType.ADD_TEXT) {
+                        invalidate()
+                    }
+                }
+                SuperTextConfig.Style.IMG -> {
+                    if (isCenter) {
+                        val imgspan = CenterAlignImageSpan(context!!, img)
+                        stringBuffer?.setSpan(
+                            imgspan,
                             startPosition,
                             endPosition,
-                            text.substring(startPosition, endPosition)
+                            Spanned.SPAN_INCLUSIVE_EXCLUSIVE
+                        )
+                    } else {
+                        val imgspan = ImageSpan(context!!, img)
+                        stringBuffer?.setSpan(
+                            imgspan,
+                            startPosition,
+                            endPosition,
+                            Spanned.SPAN_INCLUSIVE_EXCLUSIVE
                         )
                     }
-
-                    override fun updateDrawState(ds: TextPaint) {
-                        super.updateDrawState(ds)
-                        ds.isUnderlineText = enableUnderLine
+                    if (refreshNow && stringType == StringType.NORMAL) {
+                        text = stringBuffer
+                    } else if (refreshNow && stringType == StringType.ADD_TEXT) {
+                        invalidate()
                     }
                 }
-                stringBuffer?.setSpan(
-                    clickSpan,
-                    startPosition,
-                    endPosition,
-                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-                )
-                movementMethod = /*LinkMovementMethod.getInstance();*/SuperTextMovementMethod
-                if (refreshNow) {
-                    text = stringBuffer
+                SuperTextConfig.Style.CLICK -> {
+                    val clickSpan = object : ClickableSpan() {
+                        override fun onClick(widget: View) {
+                            clickCallback?.onClick(
+                                startPosition,
+                                endPosition,
+                                text.substring(startPosition, endPosition)
+                            )
+                        }
+
+                        override fun updateDrawState(ds: TextPaint) {
+                            super.updateDrawState(ds)
+                            ds.isUnderlineText = enableUnderLine
+                        }
+                    }
+                    stringBuffer?.setSpan(
+                        clickSpan,
+                        startPosition,
+                        endPosition,
+                        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
+                    movementMethod = /*LinkMovementMethod.getInstance();*/SuperTextMovementMethod
+                    if (refreshNow && stringType == StringType.NORMAL) {
+                        text = stringBuffer
+                    } else if (refreshNow && stringType == StringType.ADD_TEXT) {
+                        invalidate()
+                    }
+                }
+                SuperTextConfig.Style.SUBSCRIPT -> {
+                    val lineStyle = SubscriptSpan()
+                    stringBuffer?.setSpan(
+                        lineStyle,
+                        startPosition,
+                        endPosition,
+                        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
+                    if (refreshNow && stringType == StringType.NORMAL) {
+                        text = stringBuffer
+                    } else if (refreshNow && stringType == StringType.ADD_TEXT) {
+                        invalidate()
+                    }
+                }
+                SuperTextConfig.Style.SUPERSCRIPT -> {
+                    val lineStyle = SuperscriptSpan()
+                    stringBuffer?.setSpan(
+                        lineStyle,
+                        startPosition,
+                        endPosition,
+                        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
+                    if (refreshNow && stringType == StringType.NORMAL) {
+                        text = stringBuffer
+                    } else if (refreshNow && stringType == StringType.ADD_TEXT) {
+                        invalidate()
+                    }
                 }
             }
-            SuperTextConfig.Style.SUBSCRIPT -> {
-                val lineStyle = SubscriptSpan()
-                stringBuffer?.setSpan(
-                    lineStyle,
-                    startPosition,
-                    endPosition,
-                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-                )
-                if (refreshNow) {
-                    text = stringBuffer
-                }
-            }
-            SuperTextConfig.Style.SUPERSCRIPT -> {
-                val lineStyle = SuperscriptSpan()
-                stringBuffer?.setSpan(
-                    lineStyle,
-                    startPosition,
-                    endPosition,
-                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-                )
-                if (refreshNow) {
-                    text = stringBuffer
-                }
-            }
+        } catch (e: java.lang.Exception) {
+            Log.e(LOG, "设置样式错误:${e.localizedMessage}")
         }
+    }
+
+    /**
+     * 设置追加文本
+     * @param addText 追文本内容
+     */
+    fun setAddText(addText: CharSequence): SuperTextView {
+        addTextSpannableString = SpannableStringBuilder(addText)
+        invalidate()
+        return this
+    }
+
+    /**
+     * 设置将要设置样式的所属文案类型
+     * 设置类型觉得了后面设置文案样式时设置的目标文案.比如调用此方法设置了NORMAL,也就是在调用这个方法后,后面所设置的文案样式只针对正常文本和追加文本有效
+     * @param type 文案类型,有NORMAL,ADD_TEXT
+     * NORMAL:正常文本和竖排文本
+     * ADD_TEXT:追加文本
+     */
+    fun setStringType(type: StringType): SuperTextView {
+        this.stringType = type
+        return this
     }
 
     /**
@@ -1647,10 +1709,6 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
             var endX = it.width - paddingRight
             var startY = paddingTop
             val stopY = it.height - paddingBottom
-            var row = 0
-            var col = 0
-
-
             //行距最小距离为1，不允许小于1
             var lineScale = lineSpacingMultiplier
             var wordScale = wordSpacingMultiplier
@@ -1668,80 +1726,187 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
             val rowSpace = abs(lineScale - 1.0f) * charHeight
             val colSpace = abs(wordScale - 1.0f) * charWidth
             //如果不设置最大值,通过计算画布给出一个最大列数
-            Log.e(LOG,"最大列数:${maxLines},${(height / (charHeight+rowSpace))}")
-            if (maxLines == Int.MAX_VALUE){
-                maxLines = (height / (charHeight+rowSpace)).toInt()
+            if (maxLines == Int.MAX_VALUE) {
+                maxLines = (height / (charHeight + rowSpace)).toInt()
             }
             //可现实最大列数
-            val maxRow = ( ((width - paddingLeft - paddingRight) / (charWidth + colSpace))+0.99 ).toInt()
+            val maxRow =
+                (((width - paddingLeft - paddingRight) / (charWidth + colSpace)) + 0.99).toInt()
             //当前文字的列数
             val currentTextRow = maxRow.coerceAtMost((text.toString().length / (maxLines)))
             //计算文字总体绘制的起始点
-            Log.e(LOG,"列数:${currentTextRow},${maxRow}")
-
-            if ( (superTextGravity == SuperTextConfig.Gravity.CENTER_START || superTextGravity == SuperTextConfig.Gravity.CENTER_END)) {
-                val tempStartY = height/2.0f - text.length.coerceAtMost(maxLines)/2.0f*(charHeight+rowSpace)+rowSpace/3
-                if (tempStartY > startY){
+            if ((superTextGravity == SuperTextConfig.Gravity.CENTER_START || superTextGravity == SuperTextConfig.Gravity.CENTER_END)) {
+                val tempStartY =
+                    height / 2.0f - text.length.coerceAtMost(maxLines) / 2.0f * (charHeight + rowSpace) + rowSpace / 3
+                if (tempStartY > startY) {
                     startY = tempStartY.toInt()
                 }
 
-                val tempStartX = width/2.0f - (currentTextRow/2)*(charWidth+colSpace) - charWidth/1.3
-                if (tempStartX > startX){
+                val tempStartX =
+                    width / 2.0f - (currentTextRow / 2) * (charWidth + colSpace) - charWidth / 1.3
+                if (tempStartX > startX) {
                     startX = tempStartX.toInt()
                 }
-
-                //val tempEndX =  width - ( (maxRow/2.0f - currentTextRow/2.0f) +1)*(charWidth+colSpace) + (charWidth+colSpace)/2
-                val tempEndX =  width - (maxRow/2 - currentTextRow/2)*(charWidth+colSpace)
-                if (tempEndX < endX){
+                val tempEndX = width - (maxRow / 2 - currentTextRow / 2) * (charWidth + colSpace)
+                if (tempEndX < endX) {
                     endX = tempEndX.toInt()
                 }
-
-                Log.e(LOG,"列数:${currentTextRow},${text.length},${maxLines}")
-                //backgroundSrcPaint.color = Color.RED
-                //canvas.drawRect(RectF(endX.toFloat(), startY.toFloat(),width/2.0f,startY+(charHeight+rowSpace)*maxLines),backgroundSrcPaint)
             }
 
-            paint.color = superColor
-            for (item in text.withIndex()) {
-                if (row > maxRow) {
-                    break
-                }
-                //计算文字y坐标y
-                var y = startY + (charHeight + rowSpace) * col
-                //不允许y坐标超出画布
-                if (col >= maxLines) {
-                    row++
-                    col = 0
-                    y = startY + (charHeight + rowSpace) * col
-                    col = 1
-                } else {
-                    col++
-                }
-                if ( (charWidth + colSpace)*row > (width - paddingRight - paddingLeft)) {
-                    break
-                }
-
-                //计算文字x坐标
-                var x = startX.toFloat() + (charWidth) * row
-                if (superTextGravity == SuperTextConfig.Gravity.LEFT || superTextGravity == SuperTextConfig.Gravity.CENTER_START) {
-                    x = startX.toFloat() + (charWidth + colSpace) * row
-                } else if (superTextGravity == SuperTextConfig.Gravity.RIGHT || superTextGravity == SuperTextConfig.Gravity.CENTER_END) {
-                    x = endX - (charWidth + colSpace) * row - charWidth
-                }
-                //绘制文本
-                if (currentTextRow == 1 && maxRow == 1){
-                    canvas.drawText(item.value.toString(), x, y+charHeight/1.2f, paint)
-                }else{
-                    canvas.drawText(item.value.toString(), x + charWidth/4, y+charHeight/1.2f, paint)
-                }
+            drawSepcialText(
+                canvas,
+                charWidth,
+                charHeight,
+                maxRow,
+                currentTextRow,
+                rowSpace,
+                colSpace,
+                startX,
+                endX,
+                startY
+            )
+            if (true) {
+                return
             }
-
-    /*        backgroundSrcPaint.color = Color.RED
-            canvas.drawLine((width/2).toFloat(),0f, (width/2).toFloat(),
-                height.toFloat(),backgroundSrcPaint)
-            canvas.drawLine(0f, (height/2).toFloat(), width.toFloat(), (height/2).toFloat(),backgroundSrcPaint)*/
         }
 
+    }
+
+    fun drawSepcialText(
+        canvas: Canvas,
+        charWidth: Float,
+        charHeight: Float,
+        maxRow: Int,
+        currentTextRow: Int,
+        rowSpace: Float,
+        colSpace: Float,
+        startX: Int,
+        endX: Int,
+        startY: Int
+    ) {
+        //分割文案
+        val splitStrList = mutableListOf<CharSequence?>()
+        for (i in 0..currentTextRow) {
+            var start = i * maxLines
+            var end = i * maxLines + maxLines
+            if (start > stringBuffer!!.length) {
+                start = stringBuffer!!.length
+            }
+            if (end > stringBuffer!!.length) {
+                end = stringBuffer!!.length
+            }
+            Log.e(LOG, "${start},${end}")
+            val char = stringBuffer?.subSequence(start, end)
+            splitStrList.add(char)
+            Log.e(LOG, char.toString())
+        }
+        when (superTextGravity) {
+            SuperTextConfig.Gravity.LEFT -> {
+                for (j in splitStrList.withIndex()) {
+                    if (j.index > maxRow) {
+                        break
+                    }
+                    canvas.save()
+                    canvas.translate(j.index * (charWidth + colSpace), 0f)
+                    val a = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                        DynamicLayout.Builder.obtain(j.value!!, paint, j.value.toString().length)
+                            .build().draw(canvas)
+                    } else {
+                        val d = DynamicLayout(
+                            j.value!!,
+                            paint,
+                            j.value!!.length,
+                            Layout.Alignment.ALIGN_NORMAL,
+                            lineSpacingMultiplier,
+                            lineSpacingExtra,
+                            false
+                        )
+                        d.draw(canvas)
+                    }
+                    canvas.restore()
+                }
+            }
+            SuperTextConfig.Gravity.RIGHT -> {
+                for (j in splitStrList.withIndex()) {
+                    if (j.index > maxRow) {
+                        break
+                    }
+                    canvas.save()
+                    canvas.translate(
+                        width - j.index * (charWidth + colSpace) - (charWidth + colSpace),
+                        0f
+                    )
+                    val a = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                        DynamicLayout.Builder.obtain(j.value!!, paint, j.value.toString().length)
+                            .build().draw(canvas)
+                    } else {
+                        val d = DynamicLayout(
+                            j.value!!,
+                            paint,
+                            j.value!!.length,
+                            Layout.Alignment.ALIGN_NORMAL,
+                            lineSpacingMultiplier,
+                            lineSpacingExtra,
+                            false
+                        )
+                        d.draw(canvas)
+                    }
+                    canvas.restore()
+                }
+            }
+            SuperTextConfig.Gravity.CENTER_START -> {
+                //如果是最大列数大于或等于当前列数,只需要和普通的start方法一样绘制就行
+                for (j in splitStrList.withIndex()) {
+                    if (j.index > maxRow) {
+                        break
+                    }
+                    canvas.save()
+                    canvas.translate(j.index * (charWidth + colSpace) + startX, startY.toFloat())
+                    val a = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                        DynamicLayout.Builder.obtain(j.value!!, paint, j.value.toString().length)
+                            .build().draw(canvas)
+                    } else {
+                        val d = DynamicLayout(
+                            j.value!!,
+                            paint,
+                            j.value!!.length,
+                            Layout.Alignment.ALIGN_NORMAL,
+                            lineSpacingMultiplier,
+                            lineSpacingExtra,
+                            false
+                        )
+                        d.draw(canvas)
+                    }
+                    canvas.restore()
+                }
+            }
+            SuperTextConfig.Gravity.CENTER_END -> {
+                //如果是最大列数大于或等于当前列数,只需要和普通的start方法一样绘制就行
+                for (j in splitStrList.withIndex()) {
+                    if (j.index > maxRow) {
+                        break
+                    }
+                    canvas.save()
+                    canvas.translate(endX - j.index * (charWidth + colSpace), startY.toFloat())
+                    val a = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                        DynamicLayout.Builder.obtain(j.value!!, paint, j.value.toString().length)
+                            .build().draw(canvas)
+                    } else {
+                        val d = DynamicLayout(
+                            j.value!!,
+                            paint,
+                            j.value!!.length,
+                            Layout.Alignment.ALIGN_NORMAL,
+                            lineSpacingMultiplier,
+                            lineSpacingExtra,
+                            false
+                        )
+                        d.draw(canvas)
+                    }
+                    canvas.restore()
+                }
+            }
+        }
     }
 
     /**
@@ -1761,44 +1926,45 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
         if (gravity == Gravity.CENTER || gravity == Gravity.CENTER_HORIZONTAL) {
             return
         }
-        if (addToEndText == null) {
+        if (addToEndText == null && addTextSpannableString == null) {
             return
         }
-        if (!spannableString.isNullOrEmpty()) {
+        if (!addTextSpannableString.isNullOrEmpty()) {
             canvas?.save()
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 val staticLaout = StaticLayout.Builder.obtain(
-                    spannableString!!,
+                    addTextSpannableString!!,
                     0,
-                    spannableString!!.length,
+                    addTextSpannableString!!.length,
                     paint,
-                    paint.measureText(addToEndText).toInt()
+                    paint.measureText(addTextSpannableString.toString()).toInt()
                 )
-                //DynamicLayout.Builder.obtain(spannableString!!,paint,spannableString!!.length).build().draw(canvas)
+                layout.height
                 addTextRect = RectF(
-                    width - paint.measureText(addToEndText) - paddingRight,
+                    width - paint.measureText(addTextSpannableString.toString()) - paddingRight,
                     layout.height - (-paint.ascent() + paint.descent()) / 2,
                     width.toFloat() - paddingRight,
                     layout.height.toFloat() + (-paint.ascent() + paint.descent()) / 2
                 )
-                //canvas?.drawRect(addTextRect!!,paint)
+
+                Log.e(LOG,addTextSpannableString.toString()+",${layout.height - (-paint.ascent() + paint.descent()) / 2}")
                 canvas?.translate(
-                    width - paint.measureText(addToEndText) - paddingRight,
-                    layout.height - (-paint.ascent() + paint.descent()) / 2
+                    width - paint.measureText(addTextSpannableString.toString()) - paddingRight,
+                    layout.height.toFloat() - lineHeight/2 - paddingTop
                 )
                 staticLaout.build().draw(canvas)
             } else {
                 val staticLayout = StaticLayout(
-                    addToEndText,
+                    addTextSpannableString,
                     paint,
-                    paint.measureText(addToEndText).toInt(),
+                    paint.measureText(addTextSpannableString.toString()).toInt(),
                     Layout.Alignment.ALIGN_NORMAL,
                     lineSpacingMultiplier,
                     lineSpacingExtra,
                     includeFontPadding
                 )
                 canvas?.translate(
-                    width - paint.measureText(addToEndText) - paddingRight,
+                    width - paint.measureText(addTextSpannableString.toString()) - paddingRight,
                     height / 2 - (-paint.ascent() + paint.descent()) / 2
                 )
                 staticLayout.draw(canvas)
@@ -1817,6 +1983,21 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
         return this
     }
 
+    /**
+     * 渐变色
+     * @param orientation
+     * @param colors
+     * @return
+     */
+    fun addGradientBgDrawable(
+        orientation: GradientDrawable.Orientation?,
+        colors: IntArray?
+    ): GradientDrawable? {
+        val drawable = GradientDrawable()
+        drawable.orientation = orientation //定义渐变的方向
+        drawable.colors = colors //colors为int[]，支持2个以上的颜色
+        return drawable
+    }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         if (superTextEnablePortrait) {
@@ -1887,12 +2068,15 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
                         )
                     } else {
                         Math.min(
-                            (charHeight * (text.toString().length+1) + rowSpace).toInt() + paddingTop + paddingBottom,
+                            (charHeight * (text.toString().length + 1) + rowSpace).toInt() + paddingTop + paddingBottom,
                             specSize
                         )
                     }
                 } else {
-                    Math.min((rowNum * (charWidth) + colSpace).toInt() + paddingLeft + paddingRight - (abs(wordScale - 1.0f) * charWidth).toInt()/2, specSize
+                    Math.min(
+                        (rowNum * (charWidth) + colSpace).toInt() + paddingLeft + paddingRight - (abs(
+                            wordScale - 1.0f
+                        ) * charWidth).toInt() / 2, specSize
                     )
                 }
 
@@ -1902,21 +2086,21 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
                 //设定宽高原则是，总列数宽度或总行数高度与可用宽度或高度比较，哪个值小使用那个，这样可以避免文字内容溢出可用宽度或高度的情况
                 if (isHeight) {
                     Log.e("日志", "EXACTLY")
-                   /* if (maxLines < text.toString().length) {
-                        rowTextHeight =
-                            (paint.measureText(portraitStr) * maxLines + rowSpace).toInt()
-                        Math.min(
-                            (paint.measureText(portraitStr) * maxLines + rowSpace).toInt() + paddingTop + paddingBottom,
-                            specSize
-                        )
-                    } else {
-                        rowTextHeight =
-                            (paint.measureText(portraitStr) * text.toString().length + rowSpace).toInt()
-                        Math.min(
-                            (paint.measureText(portraitStr) * text.toString().length + rowSpace).toInt() + paddingTop + paddingBottom,
-                            specSize
-                        )
-                    }*/
+                    /* if (maxLines < text.toString().length) {
+                         rowTextHeight =
+                             (paint.measureText(portraitStr) * maxLines + rowSpace).toInt()
+                         Math.min(
+                             (paint.measureText(portraitStr) * maxLines + rowSpace).toInt() + paddingTop + paddingBottom,
+                             specSize
+                         )
+                     } else {
+                         rowTextHeight =
+                             (paint.measureText(portraitStr) * text.toString().length + rowSpace).toInt()
+                         Math.min(
+                             (paint.measureText(portraitStr) * text.toString().length + rowSpace).toInt() + paddingTop + paddingBottom,
+                             specSize
+                         )
+                     }*/
                     specSize
                 } else {
                     rowTextWidth = specSize
