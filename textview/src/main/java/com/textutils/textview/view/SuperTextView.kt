@@ -12,7 +12,6 @@ import android.util.Log
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
-import android.webkit.WebSettings
 import androidx.core.text.toSpanned
 import com.textutils.textview.R
 import com.textutils.textview.SuperTextAddTextClickListener
@@ -481,14 +480,18 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
     private fun getStartAndEndPosition(startPosition: Int, endPosition: Int): ArrayList<Int> {
         var tempStartPosition = startPosition
         var tempEndPosition = endPosition
+        var stringText = this.text
+        when(stringType){
+            StringType.ADD_TEXT -> stringText = addTextSpannableString.toString()
+        }
         if (tempEndPosition < 0) {
             tempEndPosition = 0
         }
         if (tempStartPosition < 0) {
             tempStartPosition = 0
         }
-        if (tempEndPosition > text.length) {
-            tempEndPosition = text.length
+        if (tempEndPosition > stringText.length) {
+            tempEndPosition = stringText.length
         }
         if (tempStartPosition > tempEndPosition) {
             tempEndPosition = 0
@@ -1092,9 +1095,11 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
                     isCenter
                 )
             }
-            if (isRefreshNow) {
+           /* if (isRefreshNow && stringType == StringType.NORMAL) {
                 text = stringBuffer
-            }
+            } else if (isRefreshNow && stringType == StringType.ADD_TEXT) {
+                invalidate()
+            }*/
         } else {
             val tempStartPosition = getStartAndEndPosition(startPosition, endPosition).get(0)
             val tempEndPosition = getStartAndEndPosition(startPosition, endPosition).get(1)
@@ -1587,8 +1592,6 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
             initData()
             return
         }
-
-
         //绘制填充的背景色
         val path = Path()
         path.addRoundRect(
@@ -1629,6 +1632,72 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
             superTextLineCount = lineCount
             drawAddTo(canvas)
         }
+    }
+
+    /**
+     * 获取值追加文字
+     */
+    private fun drawAddTo(canvas: Canvas?) {
+        //存在水平居中的没必要添加追加文字，顾直接结束掉
+        if (gravity == Gravity.CENTER || gravity == Gravity.CENTER_HORIZONTAL) {
+            return
+        }
+        if (addToEndText == null && addTextSpannableString == null) {
+            return
+        }
+        if (!addTextSpannableString.isNullOrEmpty()) {
+            //防止linespace为0时计算出错
+            var lineSpace = lineSpacingMultiplier
+            if (lineSpace == 0f){
+                lineSpace = 1f
+            }
+
+            canvas?.save()
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                val staticLaout = StaticLayout.Builder.obtain(
+                    addTextSpannableString!!,
+                    0,
+                    addTextSpannableString!!.length,
+                    paint,
+                    paint.measureText(addTextSpannableString.toString()).toInt()
+                )
+                layout.height
+                addTextRect = RectF(
+                    width - paint.measureText(addTextSpannableString.toString()) - paddingRight,
+                    layout.height - (-paint.ascent() + paint.descent()) / 2,
+                    width.toFloat() - paddingRight,
+                    layout.height.toFloat() + (-paint.ascent() + paint.descent()) / 2
+                )
+
+                Log.e(LOG,addTextSpannableString.toString()+",${layout.height - (-paint.ascent() + paint.descent()) / 2}")
+                when(gravity){
+                    Gravity.NO_GRAVITY,Gravity.CENTER_VERTICAL,(Gravity.TOP or Gravity.LEFT),(Gravity.TOP or Gravity.START) ->{
+                        canvas?.translate(
+                            width - paint.measureText(addTextSpannableString.toString()) - paddingRight,
+                            (height - paddingBottom - (lineHeight/lineSpace)*1.5 + ModuleUtils.dip2px(context,4f)).toFloat()
+                        )
+                        staticLaout.build().draw(canvas)
+                    }
+                }
+            } else {
+                val staticLayout = StaticLayout(
+                    addTextSpannableString,
+                    paint,
+                    paint.measureText(addTextSpannableString.toString()).toInt(),
+                    Layout.Alignment.ALIGN_NORMAL,
+                    lineSpacingMultiplier,
+                    lineSpacingExtra,
+                    includeFontPadding
+                )
+                canvas?.translate(
+                    width - paint.measureText(addTextSpannableString.toString()) - paddingRight,
+                    height / 2 - (-paint.ascent() + paint.descent()) / 2
+                )
+                staticLayout.draw(canvas)
+            }
+            canvas?.restore()
+        }
+
     }
 
 
@@ -1915,63 +1984,6 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
     fun setAddTextClickListener(addTextClickListener: SuperTextAddTextClickListener): SuperTextView {
         this.addTextClickListener = addTextClickListener
         return this
-    }
-
-
-    /**
-     * 获取值追加文字
-     */
-    private fun drawAddTo(canvas: Canvas?) {
-        //存在水平居中的没必要添加追加文字，顾直接结束掉
-        if (gravity == Gravity.CENTER || gravity == Gravity.CENTER_HORIZONTAL) {
-            return
-        }
-        if (addToEndText == null && addTextSpannableString == null) {
-            return
-        }
-        if (!addTextSpannableString.isNullOrEmpty()) {
-            canvas?.save()
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                val staticLaout = StaticLayout.Builder.obtain(
-                    addTextSpannableString!!,
-                    0,
-                    addTextSpannableString!!.length,
-                    paint,
-                    paint.measureText(addTextSpannableString.toString()).toInt()
-                )
-                layout.height
-                addTextRect = RectF(
-                    width - paint.measureText(addTextSpannableString.toString()) - paddingRight,
-                    layout.height - (-paint.ascent() + paint.descent()) / 2,
-                    width.toFloat() - paddingRight,
-                    layout.height.toFloat() + (-paint.ascent() + paint.descent()) / 2
-                )
-
-                Log.e(LOG,addTextSpannableString.toString()+",${layout.height - (-paint.ascent() + paint.descent()) / 2}")
-                canvas?.translate(
-                    width - paint.measureText(addTextSpannableString.toString()) - paddingRight,
-                    layout.height.toFloat() - lineHeight/2 - paddingTop
-                )
-                staticLaout.build().draw(canvas)
-            } else {
-                val staticLayout = StaticLayout(
-                    addTextSpannableString,
-                    paint,
-                    paint.measureText(addTextSpannableString.toString()).toInt(),
-                    Layout.Alignment.ALIGN_NORMAL,
-                    lineSpacingMultiplier,
-                    lineSpacingExtra,
-                    includeFontPadding
-                )
-                canvas?.translate(
-                    width - paint.measureText(addTextSpannableString.toString()) - paddingRight,
-                    height / 2 - (-paint.ascent() + paint.descent()) / 2
-                )
-                staticLayout.draw(canvas)
-            }
-            canvas?.restore()
-        }
-
     }
 
 

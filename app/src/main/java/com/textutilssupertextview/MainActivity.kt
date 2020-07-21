@@ -46,6 +46,11 @@ class MainActivity : AppCompatActivity() {
                 }
 
             })
+            .setStringType(StringType.ADD_TEXT)
+            .setMathStr("")
+            .setSpanBackgroundColor(0,100,Color.RED)
+            .refreshNow()
+
         testTwo.setOnClickListener {
             Toast.makeText(baseContext,"你好",Toast.LENGTH_SHORT).show()
         }
