@@ -28,18 +28,21 @@ class MainActivity : AppCompatActivity() {
             .setSpanColorStr(Color.RED,"吗")
             .setSpanBackgroundColor(0,1)
             .setSpanLineStr()
+            .setAddText("haha")
             .setSpanScaleValueStr(8)
+            .setSpanBold(0,100)
             .refreshNow()
 
-        testTwo.text = "房门口等你发放电脑卡烦恼"
-        testTwo.setSpanClickStr("Hello")
+        testTwo.text = "房门口等你发放 都房贷款纠纷方面的可能发飞动漫咖啡呢房门口的烦恼饭店客房内方面的看法拿分开买电脑积分电脑卡烦恼"
+        testTwo.setSpanClickStr("房门")
+            .setSpanColorStr(Color.RED)
+            .setSpanBoldStr()
             .setOnStyleFontClickListener(object:SuperTextClickListener{
                 override fun onClick(startPosition: Int, endPosition: Int, text: String) {
                     Toast.makeText(baseContext,text,Toast.LENGTH_SHORT).show()
                 }
+
             })
-            .setSpanColorStr(Color.RED)
-            .setSpanBoldStr()
             .setAddTextClickListener(object:SuperTextAddTextClickListener{
                 override fun onAddTextClick(text: String?) {
                     Toast.makeText(baseContext,text,Toast.LENGTH_SHORT).show()
@@ -47,13 +50,9 @@ class MainActivity : AppCompatActivity() {
 
             })
             .setStringType(StringType.ADD_TEXT)
-            .setMathStr("")
-            .setSpanBackgroundColor(0,100,Color.RED)
+            .setSpanItalicStr("点击")
+            .setSpanBoldStr()
             .refreshNow()
-
-        testTwo.setOnClickListener {
-            Toast.makeText(baseContext,"你好",Toast.LENGTH_SHORT).show()
-        }
 
 
 

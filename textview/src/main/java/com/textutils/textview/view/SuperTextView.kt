@@ -1076,48 +1076,22 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
         this.endPosition = endPosition
         compareText()
         //获取开始和结束位置
-        if (!matchStr.isNullOrEmpty()) {
-            for (item in matchStrArray) {
-                val startIndex = item.split(",")[0]
-                val endIndex = item.split(",")[1]
-                setSuperStyle(
-                    startIndex.toInt(),
-                    endIndex.toInt(),
-                    type,
-                    includeClick,
-                    superTextColor,
-                    backgroundColor,
-                    img,
-                    scalePercent,
-                    scaleValue,
-                    false,
-                    enableUnderLine,
-                    isCenter
-                )
-            }
-           /* if (isRefreshNow && stringType == StringType.NORMAL) {
-                text = stringBuffer
-            } else if (isRefreshNow && stringType == StringType.ADD_TEXT) {
-                invalidate()
-            }*/
-        } else {
-            val tempStartPosition = getStartAndEndPosition(startPosition, endPosition).get(0)
-            val tempEndPosition = getStartAndEndPosition(startPosition, endPosition).get(1)
-            setSuperStyle(
-                tempStartPosition,
-                tempEndPosition,
-                type,
-                includeClick,
-                superTextColor,
-                backgroundColor,
-                img,
-                scalePercent,
-                scaleValue,
-                isRefreshNow,
-                enableUnderLine,
-                isCenter
-            )
-        }
+        val tempStartPosition = getStartAndEndPosition(startPosition, endPosition).get(0)
+        val tempEndPosition = getStartAndEndPosition(startPosition, endPosition).get(1)
+        setSuperStyle(
+            tempStartPosition,
+            tempEndPosition,
+            type,
+            includeClick,
+            superTextColor,
+            backgroundColor,
+            img,
+            scalePercent,
+            scaleValue,
+            isRefreshNow,
+            enableUnderLine,
+            isCenter
+        )
     }
 
     /**
@@ -1139,7 +1113,10 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
         val isReset = compareText()
         matchEverySameStr = matchAll
         this.matchStr = matchStr
-
+        var text = this.text.toString()
+        when(stringType){
+            StringType.ADD_TEXT -> text = this.addTextSpannableString.toString()
+        }
         if (matchAll) {
             //如果匹配所有字符，则清除之前的数据，通过递归重新获取
             if (!matchStr.equals(this.matchStr) || isReset) {
@@ -1148,8 +1125,8 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
                     TextUtils.getMatchStrArray(
                         matchStr,
                         matchAll,
-                        text.toString(),
-                        text.toString()
+                        text,
+                        text
                     )
                 )
             }
@@ -1207,12 +1184,18 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
                     )
                 }
             }
-            if (isRefreshNow) {
-                text = stringBuffer
+            if (isRefreshNow && stringType == StringType.NORMAL) {
+                this.text = stringBuffer
+            } else if (isRefreshNow && stringType == StringType.ADD_TEXT) {
+                invalidate()
             }
         } else {
+            var text = this.text.toString()
+            when(stringType){
+                StringType.ADD_TEXT -> text = this.addTextSpannableString.toString()
+            }
             //不需要匹配全部目标时,只需要匹配到文本的第一个目标即可
-            var startIndex = text.toString().indexOf(matchStr)
+            var startIndex = text.indexOf(matchStr)
             if (startIndex == -1) {
                 return
             }
@@ -1220,8 +1203,8 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
             if (startIndex < 0) {
                 startIndex = 0
             }
-            if (endIndex > text.toString().length) {
-                endIndex = text.toString().length
+            if (endIndex > text.length) {
+                endIndex = text.length
             }
             setSuperStyle(
                 startIndex,
@@ -1662,19 +1645,31 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
                     paint.measureText(addTextSpannableString.toString()).toInt()
                 )
                 layout.height
-                addTextRect = RectF(
-                    width - paint.measureText(addTextSpannableString.toString()) - paddingRight,
-                    layout.height - (-paint.ascent() + paint.descent()) / 2,
-                    width.toFloat() - paddingRight,
-                    layout.height.toFloat() + (-paint.ascent() + paint.descent()) / 2
-                )
-
-                Log.e(LOG,addTextSpannableString.toString()+",${layout.height - (-paint.ascent() + paint.descent()) / 2}")
+                //正式開始绘制追加的文本
                 when(gravity){
-                    Gravity.NO_GRAVITY,Gravity.CENTER_VERTICAL,(Gravity.TOP or Gravity.LEFT),(Gravity.TOP or Gravity.START) ->{
+                    (Gravity.TOP or Gravity.LEFT),(Gravity.TOP or Gravity.START) ->{
+                        addTextRect = RectF(
+                            width - paint.measureText(addTextSpannableString.toString()) - paddingRight,
+                            paddingTop + layout.height  - paint.measureText(portraitStr) - ModuleUtils.dip2px(context,6f),
+                            width.toFloat() - paddingRight,
+                            layout.height.toFloat()+ ModuleUtils.dip2px(context,3f)
+                        )
                         canvas?.translate(
                             width - paint.measureText(addTextSpannableString.toString()) - paddingRight,
-                            (height - paddingBottom - (lineHeight/lineSpace)*1.5 + ModuleUtils.dip2px(context,4f)).toFloat()
+                            paddingTop + layout.height  - paint.measureText(portraitStr) - ModuleUtils.dip2px(context,6f)
+                        )
+                        staticLaout.build().draw(canvas)
+                    }
+                    (Gravity.CENTER_VERTICAL or Gravity.START) -> {
+                        addTextRect = RectF(
+                            width - paint.measureText(addTextSpannableString.toString()) - paddingRight,
+                            (height/2).toFloat() + layout.height/2 - paint.measureText(portraitStr) - ModuleUtils.dip2px(context,6f),
+                            width.toFloat() - paddingRight,
+                            (height/2).toFloat() + layout.height/2
+                        )
+                        canvas?.translate(
+                            width - paint.measureText(addTextSpannableString.toString()) - paddingRight,
+                            (height/2).toFloat() + layout.height/2 - paint.measureText(portraitStr) - ModuleUtils.dip2px(context,6f)
                         )
                         staticLaout.build().draw(canvas)
                     }
@@ -2024,6 +2019,8 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
             }
         }
     }
+
+
 
     /**
      * 设置宽和高
