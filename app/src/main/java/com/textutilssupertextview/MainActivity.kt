@@ -16,11 +16,10 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        testZero.text = "番点击可烦你"
-        testZero.setSpanClickStr("点击")
-        testZero.setSpanColorStr(Color.RED,"烦",true)
+        testZero.text = "白日依山尽黄河入海流欲穷千里目更上一层楼"
+        testZero.setSpanColorStr(Color.RED,"更上",true)
 
-        testOne.text = "你好你好你好"
+        testOne.text = "反倒可能发凡开放呢饭店开房你https://www.bilibili.com/bangumi/media/md427/?from=search"
         testOne.setSpanScaleValue(6)
             .setAddText("点击此处")
             //.setStringType(StringType.ADD_TEXT)
@@ -28,16 +27,26 @@ class MainActivity : AppCompatActivity() {
             .setSpanColorStr(Color.RED,"你好",true, arrayOf(1))
             .setSpanColorStr(Color.GREEN,"你好",true, arrayOf(2))
             .setSpanColorStr(Color.RED,"吗")
-            .setSpanBackgroundColor(0,1)
+            .setSpanBackgroundColor(0,  1)
             .setSpanLineStr()
+            .setOnStyleFontClickListener(object:SuperTextClickListener{
+                override fun onClick(startPosition: Int, endPosition: Int, text: String) {
+                    Toast.makeText(this@MainActivity,text,Toast.LENGTH_SHORT).show()
+                }
+
+            })
+            .setSpanUrlColor(Color.RED)
+            .setSpanUrlScalePrecent(1.5f)
+            .setSpanScaleValueStr(2,"你")
             .setAddText("haha")
-            .setSpanScaleValueStr(8)
+            .setSpanUrlItalic()
             .setSpanBold(0,100)
             .refreshNow()
 
-        testTwo.text = "房门口等你发放 都房贷款纠纷方面的可能发飞动漫咖啡呢房门口的烦恼饭店客房内方面的看法拿分开买电脑积分电脑卡烦恼"
-        testTwo.setSpanClickStr("房门")
+        testTwo.text = "你指尖跃动的电光，是我此生不灭的信仰，唯我超电磁炮永世长存"
+        testTwo.setSpanClickStr("超电磁炮",false)
             .setSpanColorStr(Color.RED)
+            .setSpanBackgroundColorStr(Color.BLUE)
             .setSpanBoldStr()
             .setOnStyleFontClickListener(object:SuperTextClickListener{
                 override fun onClick(startPosition: Int, endPosition: Int, text: String) {
@@ -52,8 +61,9 @@ class MainActivity : AppCompatActivity() {
 
             })
             .setStringType(StringType.ADD_TEXT)
-            .setSpanItalicStr("点击")
-            .setSpanBoldStr()
+            .setAddText("充电")
+            .setSpanBoldStr("充电")
+            .setSpanColorStr(Color.parseColor("#DEB887"))
             .refreshNow()
 
 

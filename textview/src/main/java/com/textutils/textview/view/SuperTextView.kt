@@ -317,9 +317,7 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
         if (text.toString().isEmpty()) {
             return
         }
-
         setFontFace()
-
         //如果存在匹配的文案,先进行清除
         matchStrArray.clear()
         //大于文本长度时，设置为文本长度
@@ -332,10 +330,6 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
         } else if (0 - startPosition > 0) {
             startPosition = 0
         }
-/*        if (startPosition < endPosition){
-            startPosition = 0
-            endPosition = text.length
-        }*/
         stringBuffer = SpannableStringBuilder(text)
         matchStrArray.addAll(
             TextUtils.getMatchStrArray(
@@ -418,44 +412,98 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
     private fun setStyle() {
         when (styleType) {
             SuperTextConfig.Style.LINE -> {
-                setSpanLine()
-                setSpanColor()
-
+                if (matchStr.isNullOrEmpty()){
+                    setSpanLine()
+                    setSpanColor()
+                }else{
+                    setSpanLineStr()
+                    setSpanColorStr()
+                }
             }
             SuperTextConfig.Style.UNDER_LINE -> {
-                setSpanUnderline()
-                setSpanColor()
+                if (matchStr.isNullOrEmpty()) {
+                    setSpanUnderline()
+                    setSpanColor()
+                }else{
+                    setSpanUnderlineStr()
+                    setSpanColorStr()
+                }
             }
             SuperTextConfig.Style.BOLD -> {
-                setSpanBold()
-                setSpanColor()
+                if (matchStr.isNullOrEmpty()){
+                    setSpanBold()
+                    setSpanColor()
+                }else{
+                    setSpanBoldStr()
+                    setSpanColorStr()
+                }
             }
             SuperTextConfig.Style.ITALIC -> {
-                setSpanItalic()
-                setSpanColor()
+                if (matchStr.isNullOrEmpty()){
+                    setSpanItalic()
+                    setSpanColor()
+                }else{
+                    setSpanItalicStr()
+                    setSpanColorStr()
+                }
+
             }
             SuperTextConfig.Style.SCALE_PERCENT -> {
-                setSpanScalePercent()
-                setSpanColor()
+                if (matchStr.isNullOrEmpty()){
+                    setSpanScalePercent()
+                    setSpanColor()
+                }else{
+                    setSpanScalePercentStr()
+                    setSpanColorStr()
+                }
+
             }
             SuperTextConfig.Style.SCALE_VALUE -> {
-                setSpanScaleValue()
-                setSpanColor()
+                if (matchStr.isNullOrEmpty()){
+                    setSpanScaleValue()
+                    setSpanColor()
+                }else{
+                    setSpanScaleValueStr()
+                    setSpanColorStr()
+                }
+
             }
             SuperTextConfig.Style.BACKGROUND_COLOR -> {
-                setSpanBackgroundColor()
-                setSpanColor()
+                if (matchStr.isNullOrEmpty()){
+                    setSpanBackgroundColor()
+                    setSpanColor()
+                }else{
+                    setSpanBackgroundColorStr()
+                    setSpanColorStr()
+                }
+
             }
             SuperTextConfig.Style.COLOR -> {
-                setSpanColor()
+                if (matchStr.isNullOrEmpty()){
+                    setSpanColor()
+                }else{
+                    setSpanColorStr()
+                }
             }
             SuperTextConfig.Style.SUBSCRIPT -> {
-                setSpanSubscript()
-                setSpanColor()
+                if (matchStr.isNullOrEmpty()){
+                    setSpanSubscript()
+                    setSpanColor()
+                }else{
+                    setSpanSubscriptStr()
+                    setSpanColorStr()
+                }
+
             }
             SuperTextConfig.Style.SUPERSCRIPT -> {
-                setSpanSuperscript()
-                setSpanColor()
+                if (matchStr.isNullOrEmpty()){
+                    setSpanSuperscript()
+                    setSpanColor()
+                }else{
+                    setSpanSuperscriptStr()
+                    setSpanColorStr()
+                }
+
             }
         }
     }
@@ -1546,6 +1594,7 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
      * @param addText 追文本内容
      */
     fun setAddText(addText: CharSequence): SuperTextView {
+        addToEndText = addText.toString()
         addTextSpannableString = SpannableStringBuilder(addText)
         invalidate()
         return this
@@ -1838,7 +1887,7 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
 
     }
 
-    fun drawSepcialText(
+    private fun drawSepcialText(
         canvas: Canvas,
         charWidth: Float,
         charHeight: Float,
@@ -1998,7 +2047,7 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
      * @param colors
      * @return
      */
-    fun addGradientBgDrawable(
+    private fun addGradientBgDrawable(
         orientation: GradientDrawable.Orientation?,
         colors: IntArray?
     ): GradientDrawable? {
@@ -2027,7 +2076,7 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
     /**
      * 设置宽和高
      */
-    fun reSize(size: Int, measureSpec: Int, isHeight: Boolean): Int {
+    private fun reSize(size: Int, measureSpec: Int, isHeight: Boolean): Int {
         val specMode = MeasureSpec.getMode(measureSpec)
         val specSize = MeasureSpec.getSize(measureSpec)
         var lineScale = lineSpacingMultiplier
