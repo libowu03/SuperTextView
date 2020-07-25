@@ -57,3 +57,53 @@
 
 **xml使用示例**
 ```
+
+    <com.textutils.textview.view.SuperTextView
+        android:id="@+id/testTwo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:stSolidColor="#FF69B4"
+        app:stViewType="scaleValue"
+        android:gravity="center_vertical"
+        android:layout_marginRight="10dp"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp"
+        android:text="白日依山尽黄河入海流欲穷千里目更上一层楼"
+        app:stMatchStr="黄河入海流"
+        android:textColor="#ffffff"
+        app:stCorner="20dp"
+        app:stTextSize="22dp"
+        app:stStrokeColor="	#FF1493"
+        app:stStrokeWidth="1dp"
+        app:stAddToEndText="了解更多" />
+```
+
+## 更新历史
++ 1.0.0
+基础功能完成
+
+**代码使用示例**
+```
+        testTwo.text = "你指尖跃动的电光，是我此生不灭的信仰，唯我超电磁炮永世长存"
+        testTwo.setSpanClickStr("超电磁炮",false)
+            .setSpanColorStr(Color.RED)
+            .setSpanBackgroundColorStr(Color.BLUE)
+            .setSpanBoldStr()
+            .setOnStyleFontClickListener(object:SuperTextClickListener{
+                override fun onClick(startPosition: Int, endPosition: Int, text: String) {
+                    Toast.makeText(baseContext,text,Toast.LENGTH_SHORT).show()
+                }
+
+            })
+            .setAddTextClickListener(object:SuperTextAddTextClickListener{
+                override fun onAddTextClick(text: String?) {
+                    Toast.makeText(baseContext,text,Toast.LENGTH_SHORT).show()
+                }
+
+            })
+            .setStringType(StringType.ADD_TEXT)
+            .setAddText("充电")
+            .setSpanBoldStr("充电")
+            .setSpanColorStr(Color.parseColor("#DEB887"))
+            .refreshNow()
+```
