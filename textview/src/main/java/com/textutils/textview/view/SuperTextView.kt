@@ -1112,14 +1112,14 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
     ) {
         val isReset = compareText()
         matchEverySameStr = matchAll
-        this.matchStr = matchStr
         var text = this.text.toString()
         when(stringType){
             StringType.ADD_TEXT -> text = this.addTextSpannableString.toString()
         }
         if (matchAll) {
             //如果匹配所有字符，则清除之前的数据，通过递归重新获取
-            if (!matchStr.equals(this.matchStr) || isReset) {
+            if (matchStr != this.matchStr || isReset) {
+                Log.e(LOG,"进入文字赛选")
                 this.matchStrArray.clear()
                 matchStrArray.addAll(
                     TextUtils.getMatchStrArray(
@@ -1221,6 +1221,8 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
                 isCenter
             )
         }
+        this.matchStr = matchStr
+
     }
 
 

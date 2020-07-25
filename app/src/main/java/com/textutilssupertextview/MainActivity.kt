@@ -20,11 +20,13 @@ class MainActivity : AppCompatActivity() {
         testZero.setSpanClickStr("点击")
         testZero.setSpanColorStr(Color.RED,"烦",true)
 
-        testOne.text = "反对浪费吗方面的浪费饭店对面"
+        testOne.text = "你好你好你好"
         testOne.setSpanScaleValue(6)
             .setAddText("点击此处")
             //.setStringType(StringType.ADD_TEXT)
             .setIsRefreshNow(false)
+            .setSpanColorStr(Color.RED,"你好",true, arrayOf(1))
+            .setSpanColorStr(Color.GREEN,"你好",true, arrayOf(2))
             .setSpanColorStr(Color.RED,"吗")
             .setSpanBackgroundColor(0,1)
             .setSpanLineStr()
