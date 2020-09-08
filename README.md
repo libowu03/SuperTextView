@@ -2,6 +2,18 @@
 
 **SuperTextView是一款基于原生TextView升级而来的控件,开发的初衷是让文本样式设置变得更简单.该控件的主要功能有:文本追加(在文字末端显示追加文本),竖排文字,文本样式设置(基于原生的SpannableStringBuilder显示,支持开始结束位置设置文本样式,文字全匹配样式,文字筛选匹配样式,文字匹配到的第一处设置样式).使用该控件时最好用的是kotlin,否则在java下使用很多kt下默认参数就需要你手动填写上去了.**
 
+## 引入地址
+```
+implementation 'com.github.libowu03:SuperTextView:Tag'
+
+allprojects {
+    repositories {
+			...
+			maven { url 'https://jitpack.io' }
+	}
+}
+```
+
 ## 使用方法
 **下面是通过使用位置来设置样式的方法**
 + setSpanLine( Int : 开始位置, Int  : 结束位置) : 设置删除线
