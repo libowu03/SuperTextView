@@ -16,7 +16,6 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        testZero.text = "白日依山尽黄河入海流欲穷千里目更上一层楼"
         testZero.setSpanColorStr(Color.RED,"更上",true)
 
         testOne.text = "反倒可能发凡开放呢饭店开房你https://www.bilibili.com/bangumi/media/md427/?from=search"

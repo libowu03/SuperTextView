@@ -21,13 +21,13 @@
         app:stFontFace="font.TTF"
         android:background="@mipmap/pj"
         android:textColor="#ffffff"
-        android:textSize="13dp"
-        app:stWordSpacingMultiplier="1.5"
-        android:text="白日依山尽黄河入海流欲穷千里目更上一层楼"
+        android:textSize="16dp"
+        app:stWordSpacingMultiplier="1"
+        android:text="白日依山尽\n黄河入海流防火防爆\n欲穷千里目\n更上一层楼"
         app:stViewType="color"
+        app:stGravity="end"
         app:stTextColor="#ff000000"
-        app:stMatchStr="日"
-        app:stGravity="centerEnd" />
+        app:stMatchStr="日" />
 
     <com.textutils.textview.view.SuperTextView
         android:id="@+id/testOne"
