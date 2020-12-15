@@ -1639,8 +1639,8 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
                     height.toFloat() - strokePaint.strokeWidth / 2
                 ), roundValue.toFloatArray(), Path.Direction.CW
             )
-            canvas?.drawPath(mPath, backgroundSrcPaint)
         }
+        canvas?.drawPath(mPath, backgroundSrcPaint)
 
         if (strokePaint.strokeWidth >= height / 2) {
             strokePaint.strokeWidth = (height / 2.0f)
@@ -1655,8 +1655,8 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
                     height.toFloat() - strokePaint.strokeWidth / 2
                 ), roundValue.toFloatArray(), Path.Direction.CW
             )
-            canvas?.drawPath(mPathStroke, strokePaint)
         }
+        canvas?.drawPath(mPathStroke, strokePaint)
 
         if (superTextEnablePortrait) {
             //竖排文字
