@@ -1904,55 +1904,70 @@ class SuperTextView : androidx.appcompat.widget.AppCompatTextView {
         endX: Int,
         startY: Int
     ) {
-        val strArray = text.split("\n")
-        when (superTextGravity) {
-            SuperTextConfig.Gravity.LEFT -> {
-                for (j in strArray.withIndex()) {
-                    if (j.index > maxRow) {
-                        break
-                    }
-                    canvas.save()
-                    canvas.translate(j.index * (charWidth + colSpace), 0f)
-                    drawPorText(canvas,j.value)
-                    canvas.restore()
+        stringBuffer?.let {
+            val tmpArry = text.split("\n")
+            val strArray = arrayListOf<CharSequence>()
+            var startPosition = 0
+            for (item in tmpArry.withIndex()){
+                if (item.index == 0){
+                    val tmp = it.subSequence(startPosition,startPosition + item.value.length)
+                    startPosition += item.value.length+1
+                    strArray.add(tmp)
+                }else{
+                    val tmp = it.subSequence(startPosition,startPosition + item.value.length)
+                    startPosition += item.value.length+1
+                    strArray.add(tmp)
                 }
             }
-            SuperTextConfig.Gravity.RIGHT -> {
-                for (j in strArray.withIndex()) {
-                    if (j.index > maxRow) {
-                        break
+            when (superTextGravity) {
+                SuperTextConfig.Gravity.LEFT -> {
+                    for (j in strArray.withIndex()) {
+                        if (j.index > maxRow) {
+                            break
+                        }
+                        canvas.save()
+                        canvas.translate(j.index * (charWidth + colSpace), 0f)
+                        drawPorText(canvas,j.value)
+                        canvas.restore()
                     }
-                    canvas.save()
-                    canvas.translate(
-                        width - j.index * (charWidth + colSpace) - (charWidth + colSpace),
-                        0f
-                    )
-                    drawPorText(canvas,j.value)
-                    canvas.restore()
                 }
-            }
-            SuperTextConfig.Gravity.CENTER_START -> {
-                //如果是最大列数大于或等于当前列数,只需要和普通的start方法一样绘制就行
-                for (j in strArray.withIndex()) {
-                    if (j.index > maxRow) {
-                        break
+                SuperTextConfig.Gravity.RIGHT -> {
+                    for (j in strArray.withIndex()) {
+                        if (j.index > maxRow) {
+                            break
+                        }
+                        canvas.save()
+                        canvas.translate(
+                            width - j.index * (charWidth + colSpace) - (charWidth + colSpace),
+                            0f
+                        )
+                        drawPorText(canvas,j.value)
+                        canvas.restore()
                     }
-                    canvas.save()
-                    canvas.translate(j.index * (charWidth + colSpace) + startX, startY.toFloat())
-                    drawPorText(canvas,j.value)
-                    canvas.restore()
                 }
-            }
-            SuperTextConfig.Gravity.CENTER_END -> {
-                //如果是最大列数大于或等于当前列数,只需要和普通的start方法一样绘制就行
-                for (j in strArray.withIndex()) {
-                    if (j.index > maxRow) {
-                        break
+                SuperTextConfig.Gravity.CENTER_START -> {
+                    //如果是最大列数大于或等于当前列数,只需要和普通的start方法一样绘制就行
+                    for (j in strArray.withIndex()) {
+                        if (j.index > maxRow) {
+                            break
+                        }
+                        canvas.save()
+                        canvas.translate(j.index * (charWidth + colSpace) + startX, startY.toFloat())
+                        drawPorText(canvas,j.value)
+                        canvas.restore()
                     }
-                    canvas.save()
-                    canvas.translate(endX - j.index * (charWidth + colSpace), startY.toFloat())
-                    drawPorText(canvas,j.value)
-                    canvas.restore()
+                }
+                SuperTextConfig.Gravity.CENTER_END -> {
+                    //如果是最大列数大于或等于当前列数,只需要和普通的start方法一样绘制就行
+                    for (j in strArray.withIndex()) {
+                        if (j.index > maxRow) {
+                            break
+                        }
+                        canvas.save()
+                        canvas.translate(endX - j.index * (charWidth + colSpace), startY.toFloat())
+                        drawPorText(canvas,j.value)
+                        canvas.restore()
+                    }
                 }
             }
         }

@@ -23,7 +23,7 @@
         android:textColor="#ffffff"
         android:textSize="16dp"
         app:stWordSpacingMultiplier="1"
-        android:text="白日依山尽\n黄河入海流防火防爆\n欲穷千里目\n更上一层楼"
+        android:text="白日依山尽\n黄河入海流防火防爆\n欲穷千里目\n更上一层楼\nnihaoya"
         app:stViewType="color"
         app:stGravity="end"
         app:stTextColor="#ff000000"
